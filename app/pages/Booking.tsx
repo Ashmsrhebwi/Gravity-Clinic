@@ -113,19 +113,19 @@ export function Booking() {
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight mb-4"
+            className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-4"
           >
             {t('booking.title')}
           </motion.h1>
-          <p className="text-xl text-white/80 font-light">{t('booking.hero.subtitle')}</p>
+          <p className="text-lg md:text-xl text-white/80 font-light px-4">{t('booking.hero.subtitle')}</p>
         </motion.div>
       </section>
 
       {/* Progress Stepper */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
-        <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-border/40 backdrop-blur-xl bg-white/90">
-          <div className="flex items-center justify-between relative">
-            <div className="absolute top-6 left-0 right-0 h-0.5 bg-muted -z-10" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
+        <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl p-4 md:p-8 border border-border/40 backdrop-blur-xl bg-white/90">
+          <div className="flex items-center justify-between relative px-2 md:px-0">
+            <div className="absolute top-5 md:top-6 left-0 right-0 h-0.5 bg-muted -z-10" />
             {[1, 2, 3, 4].map((step) => {
               const Icon = stepIcons[step - 1];
               const isActive = step <= currentStep;
@@ -138,15 +138,15 @@ export function Booking() {
                       scale: step === currentStep ? 1.1 : 1,
                       backgroundColor: isActive ? 'var(--primary)' : 'var(--muted)',
                     }}
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
+                    className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 ${
                       isActive ? 'text-white shadow-xl shadow-primary/30' : 'text-muted-foreground'
                     }`}
                   >
-                    {isCompleted ? <Check className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                    {isCompleted ? <Check className="w-5 h-5 md:w-6 md:h-6" /> : <Icon className="w-4 h-4 md:w-5 md:h-5" />}
                   </motion.div>
-                  <span className={`mt-3 text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
+                  <span className={`mt-2 md:mt-3 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
                     isActive ? 'text-primary' : 'text-muted-foreground'
-                  }`}>
+                  } hidden xs:block`}>
                     {t(`booking.step${step}`).split(' ')[0]}
                   </span>
                 </div>
@@ -190,7 +190,8 @@ export function Booking() {
                   <p className="font-bold text-secondary">VIP Protocol</p>
                 </div>
               </div>
-              <button 
+              <button
+                type="button"
                 onClick={() => window.location.href = '/'}
                 className="px-10 py-4 bg-secondary text-white font-bold rounded-full hover:bg-secondary/90 transition-all"
               >
@@ -214,8 +215,11 @@ export function Booking() {
                         <p className="text-muted-foreground">{t('booking.step1.desc')}</p>
                       </div>
                       <div className="space-y-4">
-                        <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">First Name</label>
+                        <label htmlFor="booking_firstName" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">
+                          First Name
+                        </label>
                         <input 
+                          id="booking_firstName"
                           type="text" 
                           required 
                           value={formData.firstName}
@@ -224,8 +228,11 @@ export function Booking() {
                         />
                       </div>
                       <div className="space-y-4">
-                        <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">Last Name</label>
+                        <label htmlFor="booking_lastName" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">
+                          Last Name
+                        </label>
                         <input 
+                          id="booking_lastName"
                           type="text" 
                           required 
                           value={formData.lastName}
@@ -234,20 +241,28 @@ export function Booking() {
                         />
                       </div>
                       <div className="space-y-4">
-                        <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">Email Address</label>
+                        <label htmlFor="booking_email" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">
+                          Email Address
+                        </label>
                         <input 
                           type="email" 
+                          id="booking_email"
                           required 
+                          autoComplete="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           className="w-full px-6 py-4 rounded-2xl border bg-muted/10 border-border focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
                         />
                       </div>
                       <div className="space-y-4">
-                        <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">Phone Number</label>
+                        <label htmlFor="booking_phone" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">
+                          Phone Number
+                        </label>
                         <input 
                           type="tel" 
+                          id="booking_phone"
                           required 
+                          autoComplete="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
                           className="w-full px-6 py-4 rounded-2xl border bg-muted/10 border-border focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
@@ -295,6 +310,7 @@ export function Booking() {
                           <CalendarIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-primary w-5 h-5 pointer-events-none" />
                           <input 
                             type="date" 
+                            id="booking_date"
                             required 
                             min={new Date().toISOString().split('T')[0]}
                             value={formData.date}
@@ -303,9 +319,12 @@ export function Booking() {
                           />
                         </div>
                         <div className="space-y-4">
-                          <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">Additional Requirements</label>
+                          <label htmlFor="booking_message" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1">
+                            Additional Requirements
+                          </label>
                           <textarea 
                             rows={5}
+                            id="booking_message"
                             value={formData.message}
                             onChange={(e) => handleInputChange('message', e.target.value)}
                             placeholder="Tell us about any medical history or specific expectations..."
