@@ -1,154 +1,174 @@
 import { useLanguage } from '../context/LanguageContext';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Check, ArrowRight, Heart } from 'lucide-react';
+import { Check, Star, Award, Clock, Heart, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useDashboard } from '../context/DashboardContext';
-const localImg = 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=1200';
+import { EditorialGrid } from '../components/EditorialGrid';
+import { BlogInsights } from '../components/BlogInsights';
+
+const femaleBg = 'https://images.unsplash.com/photo-1596178060671-7a80dc8059ea?auto=format&fit=crop&q=80&w=1200';
 
 export function FemaleHairTransplant() {
   const { language, t } = useLanguage();
   const { state } = useDashboard();
   
-  const treatment = state.treatments.find(t => t.id === '4') || state.treatments[0];
-  
+  const treatment = useMemo(() => 
+    state.treatments.find(t => Number(t.id) === 4) ||
+    state.treatments.find(t => t.slug === 'female-hair-transplant') ||
+    (state.treatments.length > 0 ? state.treatments[0] : null)
+  , [state.treatments]);
+
+  const testimonial = useMemo(() => 
+    state.testimonials.find(t => {
+       const treatmentName = typeof t.treatment === 'object' ? (t.treatment as any)?.en : t.treatment;
+       return treatmentName?.toLowerCase().includes('female') || treatmentName?.toLowerCase().includes('women');
+    }) || state.testimonials[0], 
+  [state.testimonials]);
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const editorialSections = useMemo(() => {
+    if (!treatment || !Array.isArray(treatment.content_sections) || treatment.content_sections.length === 0) {
+      return [
+        {
+          title: { en: 'Empowering Your Confidence', ar: 'تمكين ثقتك بنفسك', fr: 'Renforcer votre confiance', ru: 'Укрепление Вашей Уверенности' },
+          subtitle: { en: 'Female Hair Restoration', ar: 'ترميم شعر الإناث', fr: 'Restauration capillaire féminine', ru: 'Женское Восстановление Волос' },
+          image: 'https://images.unsplash.com/photo-1516584224476-3573559744cb?auto=format&fit=crop&q=80&w=800',
+          description: { 
+            en: 'Hair loss can be particularly distressing for women. Our specialized female hair transplant procedures address thinning and receding lines with a delicate, artistic approach. We focus on restoring volume and density while maintaining your natural hairline and style.',
+            ar: 'يمكن أن يكون تساقط الشعر مؤلمًا بشكل خاص للنساء. تعالج إجراءات زراعة الشعر المتخصصة للإناث لدينا ترقق الشعر وتراجعه بأسلوب فني دقيق. نحن نركز على استعادة الحجم والكثافة مع الحفاظ على خط شعرك وأسلوبك الطبيعي.',
+          }
+        },
+        {
+          title: { en: 'No-Shave FUE Techniques', ar: 'تقنيات FUE بدون حلاقة', fr: 'Techniques FUE sans rasage', ru: 'Методы FUE без Бритья' },
+          subtitle: { en: 'Discreet Excellence', ar: 'تميز سري', fr: 'Excellence Discrète', ru: 'Сдержанное Превосходство' },
+          image: 'https://images.unsplash.com/photo-1522337660859-0263f6953724?auto=format&fit=crop&q=80&w=800',
+          description: {
+            en: 'We understand that discretion is often paramount. Our clinic offers advanced "Unshaven FUE" techniques, allowing for hair restoration without the need for a full shave. This ensures a discreet recovery process while achieving remarkable, long-lasting density.',
+            ar: 'نحن نتفهم أن السرية غالبًا ما تكون ذات أهمية قصوى. تكتمل عيادتنا بتقنيات "Unshaven FUE" المتقدمة، مما يسمح بترميم الشعر دون الحاجة إلى حلاقة كاملة. يضمن ذلك عملية تعافي سرية مع تحقيق كثافة رائعة وطويلة الأمد.',
+          }
+        }
+      ];
+    }
+
+    return treatment.content_sections.map((s: any) => ({
+      title: s.title || {},
+      subtitle: s.subtitle || {},
+      image: s.media_url || s.image || femaleBg,
+      description: s.description || {},
+      link: s.link || '/contact'
+    }));
+  }, [treatment?.content_sections, language]);
+
+  if (!treatment) return null;
 
   return (
     <div className="min-h-screen" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <section ref={heroRef} className="relative h-[50vh] flex items-center justify-center overflow-hidden">
+      {/* Premium Hero */}
+      <section ref={heroRef} className="relative h-[75vh] flex items-center justify-center overflow-hidden">
         <motion.div className="absolute inset-0 w-full h-full" style={{ y: backgroundY }}>
           <img
-            src={treatment.image}
-            alt={treatment.title[language]}
-            className="w-full h-full object-cover"
+            src={treatment.media_url || treatment.image || femaleBg}
+            alt={treatment.title?.[language] || treatment.title?.en}
+            className="w-full h-full object-cover scale-110"
           />
-          <div className="absolute inset-0 bg-secondary/60 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-[#3D0C2A]/70 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-secondary"></div>
         </motion.div>
-        <motion.div style={{ opacity }} className="relative z-10 text-center text-white pt-24">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 italic">{treatment.title[language]}</h1>
-          <p className="text-xl max-w-2xl mx-auto text-white/90">{treatment.description?.[language]}</p>
+
+        <motion.div style={{ y: textY, opacity }} className="relative z-10 max-w-5xl mx-auto px-4 text-center text-white pt-24">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 text-primary-foreground text-xs font-black tracking-[0.3em] uppercase mb-8">
+            {t('female.category') || 'Restorative Elegance'}
+          </motion.div>
+          <h1 className="text-6xl md:text-8xl mb-8 font-bold tracking-tighter drop-shadow-2xl italic">
+            {treatment.title?.[language] || treatment.title?.en || ''}
+          </h1>
+          <p className="text-xl md:text-2xl text-white/80 font-medium max-w-3xl mx-auto leading-relaxed">
+            {treatment.description?.[language] || treatment.description?.en || ''}
+          </p>
         </motion.div>
       </section>
 
-      <section className="py-24 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-           <div className="order-2 lg:order-1 relative">
-             <div className="absolute -inset-4 bg-primary/10 rounded-[4rem] blur-3xl -z-10"></div>
-             <div className="rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white relative">
-               <img
-                src={localImg}
-                alt="Results"
-                loading="lazy"
-                className="w-full h-full object-cover aspect-[4/5]"
-              />
-            </div>
-          </div>
-          <div className="order-1 lg:order-2">
-            <h2 className="text-4xl font-bold mb-6 italic text-secondary">{treatment.title[language]}</h2>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              {treatment.description?.[language]}
-            </p>
-            <ul className="space-y-4 mb-10">
-              {treatment.features?.map((feature, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="font-semibold text-secondary">{feature[language]}</span>
-                </li>
-              ))}
-            </ul>
-             <Link
-              to="/appointment"
-              className="inline-flex items-center px-10 py-4 bg-primary text-white font-bold rounded-full hover:shadow-2xl hover:shadow-primary/30 transition-all group"
-            >
-              {t('service.journey.restoration')}
-              <ArrowRight className={`ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform ${language === 'ar' ? 'rotate-180' : ''}`} />
-            </Link>
-          </div>
+      {/* Feature Section */}
+      <section className="py-32 bg-[#FAF9F6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-12 text-left rtl:text-right">
+                 <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-secondary text-primary rounded-2xl flex items-center justify-center shadow-xl">
+                       <Heart className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-4xl font-black text-secondary tracking-tight italic">{t('common.compassionateCare')}</h2>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {Array.isArray(treatment.features) && (treatment.features as any[]).map((feature: any, i: number) => (
+                      <motion.div key={i} className="flex items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-secondary/5 group hover:border-primary/20 transition-all">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                          <Check className="w-3 h-3 text-primary group-hover:text-white" />
+                        </div>
+                        <span className="font-bold text-secondary">{typeof feature === 'object' && feature !== null ? (feature[language] || feature.en || '') : feature}</span>
+                      </motion.div>
+                    ))}
+                 </div>
+              </div>
+              <div className="bg-secondary text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 -rotate-45 translate-x-16 -translate-y-16"></div>
+                 <h3 className="text-3xl font-black mb-8 italic">{t('female.restoration.title') || 'Natural Volume Guaranteed'}</h3>
+                 <p className="text-lg opacity-80 leading-relaxed mb-12">
+                   {t('female.details.text') || 'We specialize in female-specific hair densities and growth patterns, ensuring that your hair transplant results are indistinguishable from your original, healthy hair.'}
+                 </p>
+                 <Link to="/appointment" className="inline-flex items-center gap-4 text-primary font-black border-b-4 border-primary pb-1 hover:text-white hover:border-white transition-all text-lg italic">
+                    {t('service.journey.start')} <ArrowRight className="w-5 h-5 rtl:rotate-180" />
+                 </Link>
+              </div>
+           </div>
         </div>
       </section>
 
-      {/* Detailed Content Sections */}
-      <section className="py-24 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {[
-            {
-              title: { en: 'Female Hair Loss Types', ar: 'أنواع تساقط الشعر عند النساء', fr: 'Types de Perte de Cheveux Féminine', ru: 'Типы Выпадения Волос у Женщин' },
-              subtitle: { en: 'Accurate Diagnosis', ar: 'تشخيص دقيق', fr: 'Diagnostic Précis', ru: 'Точный Диагноз' },
-              description: { 
-                en: 'Female hair loss often presents differently than in men, commonly involving diffuse thinning over the entire scalp rather than a receding hairline. We conduct comprehensive consultations to accurately diagnose the type of hair loss to prescribe the most effective intervention.',
-                ar: 'غالبًا ما يظهر تساقط الشعر عند النساء بشكل مختلف عن الرجال، حيث يشتمل عادةً على ترقق منتشر على جميع أنحاء فروة الرأس بدلاً من تراجع خط الشعر. نجري استشارات شاملة لتشخيص نوع تساقط الشعر بدقة لوصف التدخل الأكثر فاعلية.',
-                fr: 'La perte de cheveux féminine se présente souvent différemment de la calvitie masculine. Nous menons des consultations complètes pour diagnostiquer avec précision le type de perte de cheveux.',
-                ru: 'Выпадение волос у женщин часто проявляется иначе, чем у мужчин. Мы проводим комплексные консультации для точной диагностики типа выпадения волос, чтобы назначить наиболее эффективное вмешательство.'
-              }
-            },
-            {
-              title: { en: 'Specialized Techniques for Women', ar: 'تقنيات متخصصة للنساء', fr: 'Techniques Spécialisées pour les Femmes', ru: 'Специализированные Технологии для Женщин' },
-              subtitle: { en: 'No-Shave Implantation', ar: 'زراعة بدون حلاقة', fr: 'Implantation Sans Rasage', ru: 'Имплантация Без Бритья' },
-              description: {
-                en: 'Understanding the aesthetic concerns, we employ specialized completely no-shave DHI techniques for women. This allows us to implant follicles safely and densely without disturbing the surrounding existing long hair, protecting your current appearance.',
-                ar: 'إدراكًا منا للمشكلات الجمالية، نستخدم تقنيات DHI المتخصصة بدون حلاقة تمامًا للنساء. يتيح لنا هذا زراعة البصيلات بأمان وبكثافة دون التأثير على الشعر الطويل الموجود المحيط، مما يحمي مظهرك الحالي.',
-                fr: 'Comprenant les préoccupations esthétiques, nous utilisons des techniques DHI spécialisées sans rasage complet pour les femmes. Cela nous permet d\'implanter des follicules en toute sécurité.',
-                ru: 'Понимая эстетические проблемы, мы используем специализированные методы DHI без бритья для женщин. Это позволяет нам безопасно имплантировать фолликулы, не нарушая окружающие длинные волосы.'
-              }
-            },
-            {
-              title: { en: 'What to Expect During the Procedure', ar: 'ماذا تتوقع أثناء الإجراء', fr: 'À Quoi S\'attendre Pendant la Procédure', ru: 'Чего Ожидать Во Время Процедуры' },
-              subtitle: { en: 'Comfort & Privacy', ar: 'الراحة والخصوصية', fr: 'Confort et Intimité', ru: 'Комфорт и Конфиденциальность' },
-              description: {
-                en: 'The entire process is managed with the utmost care for your privacy and comfort. Operations take place in our VIP suites under local anesthesia. The delicate nature of female implantation ensures there is minimal discomfort and highly artistic distribution of grafts.',
-                ar: 'تدار العملية برمتها بأقصى درجات الاهتمام لخصوصيتك وراحتك. تتم العمليات في أجنحة كبار الشخصيات لدينا تحت التخدير الموضعي. تضمن الطبيعة الدقيقة لزراعة شعر الإناث أن يكون هناك الحد الأدنى من الانزعاج والتوزيع الفني العالي للطعوم.',
-                fr: 'L\'ensemble du processus est géré avec le plus grand soin pour votre intimité et votre confort. Les opérations se déroulent dans nos suites VIP sous anesthésie locale.',
-                ru: 'Весь процесс контролируется с максимальной заботой о вашей конфиденциальности и комфорте. Операции проходят в наших VIP-апартаментах под местной анестезией.'
-              }
-            },
-            {
-              title: { en: 'Long-term Maintenance & Density', ar: 'المحافظة على الكثافة على المدى الطويل', fr: 'Entretien à Long Terme et Densité', ru: 'Долгосрочное Сохранение Плотности' },
-              subtitle: { en: 'Sustained Beauty', ar: 'جمال مستدام', fr: 'Beauté Durable', ru: 'Продолжительная Красота' },
-              description: {
-                en: 'Results gradually manifest over the following months, enriching your hair\'s overall volume. We complement transplant treatments with nutrient-rich PRP therapies and specially formulated female hair care regiments, securing vibrant, thick hair for life.',
-                ar: 'تبرز النتائج تدريجياً خلال الأشهر التالية، مما يثري الحجم الكلي لشعرك. نُكمل علاجات الزراعة بعلاجات البلازما الغنية بالصفائح الدموية الغنية بالمغذيات وأنظمة العناية بالشعر للإناث المصممة خصيصًا، مما يضمن الحصول على شعر كثيف وحيوي مدى الحياة.',
-                fr: 'Les résultats se manifestent progressivement au cours des mois suivants, enrichissant le volume global de vos cheveux. Nous complétons les traitements de greffe avec des thérapies PRP riches en nutriments.',
-                ru: 'Результаты постепенно проявляются в течение последующих месяцев, увеличивая общий объем ваших волос. Мы дополняем процедуры по пересадке терапией PRP, обеспечивая яркие, густые волосы.'
-              }
-            }
-          ].map((section, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-card p-8 md:p-10 rounded-3xl shadow-sm border border-border/50 hover:shadow-md transition-all"
-            >
-              {section.subtitle && (
-                <h3 className="text-primary font-bold tracking-wider uppercase mb-3 text-sm">
-                  {section.subtitle[language]}
-                </h3>
-              )}
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-secondary">
-                {section.title[language]}
-              </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {section.description[language]}
-              </p>
-            </motion.div>
-          ))}
+      {/* Editorial Content */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <EditorialGrid sections={editorialSections} t={t} />
+        </div>
+      </section>
+
+      <section className="py-24 bg-[#FAF9F6]">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-6xl font-black mb-16 text-secondary tracking-tighter italic">{t('testimonials.title')}</h2>
+          {testimonial && (
+            <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-secondary/5 relative">
+              <div className="flex justify-center gap-2 mb-8">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-6 h-6 fill-primary text-primary" />)}
+              </div>
+              <p className="text-2xl font-black text-secondary italic leading-relaxed mb-8">"{typeof testimonial.text === 'object' && testimonial.text !== null ? (testimonial.text[language] || (testimonial.text as any).en) : (testimonial.feedback as any)?.[language] || (testimonial.feedback as any)?.en || ''}"</p>
+              <p className="font-black text-primary uppercase tracking-widest text-sm">{typeof testimonial.name === 'object' && testimonial.name !== null ? (testimonial.name as any)[language] : (testimonial.patient_name as any)?.[language] || testimonial.patient_name || testimonial.name || ''}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <BlogInsights />
+
+      {/* CTA Section */}
+      <section className="py-24 bg-gradient-to-r from-secondary to-secondary/90 text-white relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('home.cta.title')}</h2>
+          <p className="text-xl text-white/80 mb-10">{t('home.cta.subtitle')}</p>
+          <Link to="/appointment" className="inline-flex items-center px-10 py-5 bg-white text-primary font-black rounded-full hover:shadow-2xl transition-all">
+            {t('common.bookNow')} <ArrowRight className="ml-2 w-5 h-5 rtl:rotate-180" />
+          </Link>
         </div>
       </section>
 
       {/* Mobile Sticky CTA */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-border z-40">
-        <Link
-          to="/appointment"
-          className="flex items-center justify-center w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30"
-        >
+      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-border z-40">
+        <Link to="/appointment" className="flex items-center justify-center w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30">
           {t('common.bookNow')}
         </Link>
       </div>

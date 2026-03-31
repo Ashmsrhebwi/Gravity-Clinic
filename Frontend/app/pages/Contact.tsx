@@ -5,6 +5,8 @@ import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useDashboard } from '../context/DashboardContext';
 import { clinicService } from '../services/clinicService';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 const contactBg = 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=1200';
 
 export function Contact() {
@@ -61,7 +63,8 @@ export function Contact() {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        message: `Subject: ${formData.subject}\n\n${formData.message}`,
+        subject: formData.subject,
+        message: formData.message,
       });
       
       toast.success(t('contact.success.msg'));
@@ -89,7 +92,7 @@ export function Contact() {
           style={{ y: backgroundY }}
         >
           <img
-            src={contactBg}
+            src={state.sections['contact.hero']?.media_url || state.sections['contact.hero']?.image || state.sections['about.contact']?.media_url || state.sections['about.contact']?.image || contactBg}
             alt={t('contact.title')}
             className="w-full h-full object-cover"
           />
@@ -103,17 +106,17 @@ export function Contact() {
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight mb-4"
+            className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4"
           >
-            {t('contact.title')}
+            {state.sections['contact.hero']?.title?.[language] || state.sections['about.contact']?.title?.[language] || t('contact.title')}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-xl md:text-2xl text-white/90 font-light"
+            className="text-base sm:text-xl md:text-2xl text-white/90 font-light px-4"
           >
-            {t('contact.subtitle')}
+            {state.sections['contact.hero']?.subtitle?.[language] || state.sections['about.contact']?.subtitle?.[language] || t('contact.subtitle')}
           </motion.p>
         </motion.div>
       </section>
@@ -132,8 +135,8 @@ export function Contact() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-secondary italic">{t('contact.form.title')}</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Honeypot Field */}
-                <div className="absolute opacity-0 -z-50 h-0 w-0 overflow-hidden" aria-hidden="true">
+                {/* Honeypot Field - completely hidden from layout */}
+                <div style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }} aria-hidden="true">
                   <label htmlFor="bot_field_contact">{t('contact.bot_label')}</label>
                   <input 
                     type="text" 
@@ -178,12 +181,21 @@ export function Contact() {
                   <label className="block text-sm font-medium text-foreground mb-2">
                     {t('booking.phone')} *
                   </label>
-                  <input
-                    type="tel"
+                  <PhoneInput
+                    country={'tr'}
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`w-full px-4 py-3 rounded-lg border ${errors.phone ? 'border-red-500/50' : 'border-border'} bg-card text-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors`}
-                    required
+                    onChange={(phone) => handleInputChange('phone', '+' + phone)}
+                    inputProps={{
+                      name: 'phone',
+                      required: true,
+                      autoComplete: 'tel',
+                      id: 'contact_phone'
+                    }}
+                    containerClass="!w-full"
+                    inputClass={`!w-full !px-14 !py-3 !rounded-lg !border ${errors.phone ? '!border-red-500/50' : '!border-border'} !bg-card !text-foreground focus:!ring-2 focus:!ring-primary focus:!border-primary !outline-none !transition-colors !h-auto !font-inherit`}
+                    buttonClass={`!border-none !bg-transparent !rounded-l-lg !px-3 hover:!bg-muted/20 ${language === 'ar' ? '!right-0 !left-auto !border-l' : '!left-0 !border-r'} !border-border`}
+                    dropdownClass="!rounded-xl !border-border !shadow-2xl !bg-white !text-secondary"
+                    searchClass="!bg-muted/10 !border-border"
                   />
                   {errors.phone && <p className="text-[10px] text-red-500 font-bold mt-1 px-1">{errors.phone}</p>}
                 </div>
@@ -249,8 +261,7 @@ export function Contact() {
                   </div>
                   <div className="ml-4 rtl:ml-0 rtl:mr-4">
                     <h3 className="font-semibold mb-1">{t('contact.phone.label')}</h3>
-                    <p className="text-muted-foreground" dir="ltr">+90 505 660 63 56</p>
-                    <p className="text-muted-foreground" dir="ltr">+90 544 792 46 66</p>
+                    <p className="text-muted-foreground" dir="ltr">{state.locations[0]?.phone || '+90 541 339 25 69'}</p>
                   </div>
                 </div>
 
@@ -260,7 +271,7 @@ export function Contact() {
                   </div>
                   <div className="ml-4 rtl:ml-0 rtl:mr-4">
                     <h3 className="font-semibold mb-1">{t('contact.email.label')}</h3>
-                    <p className="text-muted-foreground">info@gravity-clinic.com</p>
+                    <p className="text-muted-foreground">{state.locations[0]?.email || 'info@gravity-clinic.com'}</p>
                   </div>
                 </div>
 
@@ -270,7 +281,7 @@ export function Contact() {
                   </div>
                   <div className="ml-4 rtl:ml-0 rtl:mr-4">
                     <h3 className="font-semibold mb-1">{t('contact.workingHours')}</h3>
-                    <p className="text-muted-foreground">{state.locations[0]?.hours[language] || t('contact.monSat')}</p>
+                    <p className="text-muted-foreground">{state.locations[0]?.hours?.[language] || t('contact.monSat')}</p>
                   </div>
                 </div>
               </div>
@@ -296,39 +307,43 @@ export function Contact() {
             <h2 className="text-4xl mb-4 italic font-bold text-secondary">{t('contact.locations')}</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {state.locations.map((location, index) => (
-              <motion.div
-                key={location.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card text-card-foreground border border-border rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow rtl:text-right"
-              >
-                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mb-4">
-                  <MapPin className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl mb-2 font-bold text-secondary">{location.city[language]}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{location.country[language]}</p>
-                <div className="space-y-3 text-sm">
-                  <p className="text-foreground/80 leading-relaxed">{location.address[language]}</p>
-                  <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
-                    <Phone className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-primary" />
-                    <span dir="ltr">{location.phone}</span>
-                  </p>
-                  <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
-                    <Mail className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-primary" />
-                    {location.email}
-                  </p>
-                  <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
-                    <Clock className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-muted-foreground" />
-                    {location.hours[language]}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {state.locations.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8 text-sm">{t('contact.loadingLocations') || 'Loading locations…'}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {state.locations.map((location, index) => (
+                <motion.div
+                  key={location.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-card text-card-foreground border border-border rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow rtl:text-right"
+                >
+                  <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mb-4">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl mb-2 font-bold text-secondary">{location.city?.[language] || location.city?.en || ''}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{location.country?.[language] || location.country?.en || ''}</p>
+                  <div className="space-y-3 text-sm">
+                    <p className="text-foreground/80 leading-relaxed">{location.address?.[language] || location.address?.en || ''}</p>
+                    <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
+                      <Phone className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-primary" />
+                      <span dir="ltr">{location.phone || ''}</span>
+                    </p>
+                    <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
+                      <Mail className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-primary" />
+                      {location.email || ''}
+                    </p>
+                    <p className="text-foreground/80 flex items-center rtl:flex-row-reverse">
+                      <Clock className="w-4 h-4 mr-2 ml-0 rtl:mr-0 rtl:ml-2 text-muted-foreground" />
+                      {location.hours?.[language] || location.hours?.en || ''}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -342,54 +357,58 @@ export function Contact() {
             <p className="text-muted-foreground text-lg">{t('contact.faq.subtitle')}</p>
           </div>
 
-          <div className="space-y-4">
-            {state.faqs.map((faq, index) => (
-              <motion.div
-                key={faq.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className={`rounded-[2rem] border transition-all duration-300 ${
-                  openFaq === index 
-                    ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5' 
-                    : 'border-border bg-card hover:border-primary/50'
-                }`}
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  type="button"
-                  aria-expanded={openFaq === index}
-                  aria-controls={`contact_faq_${index}`}
-                  className="w-full px-8 py-6 text-left rtl:text-right flex items-center justify-between group"
+          {state.faqs.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8 text-sm">{t('contact.loadingFaqs') || 'Loading FAQs…'}</p>
+          ) : (
+            <div className="space-y-4">
+              {state.faqs.map((faq, index) => (
+                <motion.div
+                  key={faq.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`rounded-[2rem] border transition-all duration-300 ${
+                    openFaq === index
+                      ? 'border-primary bg-primary/5 shadow-xl shadow-primary/5'
+                      : 'border-border bg-card hover:border-primary/50'
+                  }`}
                 >
-                  <span className={`text-lg font-bold transition-colors ${openFaq === index ? 'text-primary' : 'text-secondary font-semibold'}`}>
-                    {faq.question[language]}
-                  </span>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${openFaq === index ? 'bg-primary text-white rotate-180' : 'bg-muted text-muted-foreground'}`}>
-                    <ChevronDown className="w-5 h-5" />
-                  </div>
-                </button>
-                <AnimatePresence>
-                  {openFaq === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                      id={`contact_faq_${index}`}
-                    >
-                      <div className="px-8 pb-8 pt-2">
-                        <p className={`text-muted-foreground leading-relaxed text-lg border-primary/20 pl-6 rtl:pl-0 rtl:pr-6 ${language === 'ar' ? 'border-r-2' : 'border-l-2'}`}>
-                          {faq.answer[language]}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </div>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    type="button"
+                    aria-expanded={openFaq === index}
+                    aria-controls={`contact_faq_${index}`}
+                    className="w-full px-6 sm:px-8 py-5 sm:py-6 text-left rtl:text-right flex items-center justify-between group"
+                  >
+                    <span className={`text-base sm:text-lg font-bold transition-colors ${openFaq === index ? 'text-primary' : 'text-secondary font-semibold'} pr-4 rtl:pr-0 rtl:pl-4`}>
+                      {faq.question?.[language] || faq.question?.en || ''}
+                    </span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${openFaq === index ? 'bg-primary text-white rotate-180' : 'bg-muted text-muted-foreground'}`}>
+                      <ChevronDown className="w-5 h-5" />
+                    </div>
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                        id={`contact_faq_${index}`}
+                      >
+                        <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-2">
+                          <p className={`text-muted-foreground leading-relaxed text-base sm:text-lg border-primary/20 pl-4 sm:pl-6 rtl:pl-0 rtl:pr-4 rtl:sm:pr-6 ${language === 'ar' ? 'border-r-2' : 'border-l-2'}`}>
+                            {faq.answer?.[language] || faq.answer?.en || ''}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

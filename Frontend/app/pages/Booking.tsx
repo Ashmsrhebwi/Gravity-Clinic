@@ -5,6 +5,8 @@ import { Check, ArrowRight, ArrowLeft, Calendar as CalendarIcon, User, Clipboard
 import { toast } from 'sonner';
 import { useDashboard } from '../context/DashboardContext';
 import { clinicService } from '../services/clinicService';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 const bookingBg = 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=1200';
 
 export function Booking() {
@@ -36,6 +38,9 @@ export function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = 4;
+
+  // Helpers: treat all treatment IDs as strings for safe comparison
+  const toStrId = (id: string | number | undefined | null): string => String(id ?? '');
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -91,7 +96,7 @@ export function Booking() {
         email: formData.email,
         phone: formData.phone,
         date: formData.date,
-        treatment: state.treatments.find(t => t.id === formData.treatment)?.title?.en || formData.treatment,
+        treatment: state.treatments.find(t => toStrId(t.id) === formData.treatment)?.title?.en || formData.treatment,
         message: formData.message,
       });
       
@@ -119,7 +124,7 @@ export function Booking() {
 
   const stepIcons = [User, Clipboard, CalendarIcon, CheckCircle];
 
-  const selectedTreatment = state.treatments.find(tr => tr.id === formData.treatment);
+  const selectedTreatment = state.treatments.find(tr => toStrId(tr.id) === formData.treatment);
 
   return (
     <div className="min-h-screen" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -130,7 +135,7 @@ export function Booking() {
           style={{ y: backgroundY }}
         >
           <img
-            src={bookingBg}
+            src={state.sections['booking.hero']?.media_url || state.sections['booking.hero']?.image || state.sections['about.appointment']?.media_url || state.sections['about.appointment']?.image || bookingBg}
             alt={t('booking.title')}
             className="w-full h-full object-cover"
           />
@@ -141,14 +146,21 @@ export function Booking() {
           style={{ y: textY, opacity }}
           className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white pt-24"
         >
-          <motion.h1
+          <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-4"
+            className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4"
           >
-            {t('booking.title')}
+            {state.sections['booking.hero']?.title?.[language] || state.sections['about.appointment']?.title?.[language] || t('booking.title')}
           </motion.h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/80 font-light px-4">{t('booking.hero.subtitle')}</p>
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-base sm:text-xl md:text-2xl text-white/90 font-light px-4"
+          >
+            {state.sections['booking.hero']?.subtitle?.[language] || state.sections['about.appointment']?.subtitle?.[language] || t('booking.subtitle')}
+          </motion.p>
         </motion.div>
       </section>
 
@@ -195,8 +207,11 @@ export function Booking() {
               key="success"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 text-center shadow-2xl border border-primary/10"
+              className="bg-white rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 text-center shadow-2xl border border-primary/20 relative overflow-hidden"
             >
+              {/* Premium Background Accent */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary" />
+              
               <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
                 <CheckCircle className="w-12 h-12 text-primary" />
               </div>
@@ -204,30 +219,38 @@ export function Booking() {
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
                 {t('booking.success.desc').replace('{name}', formData.firstName)}
               </p>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left rtl:text-right mb-12">
-                <div className="p-6 bg-muted/30 rounded-2xl">
+                <div className="p-6 bg-muted/30 rounded-2xl border border-border/50">
                   <Clock className="w-5 h-5 text-primary mb-3" />
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{t('booking.responseTime.label')}</p>
                   <p className="font-bold text-secondary">{t('booking.responseTime.value')}</p>
                 </div>
-                <div className="p-6 bg-muted/30 rounded-2xl">
+                <div className="p-6 bg-muted/30 rounded-2xl border border-border/50">
                   <MapPin className="w-5 h-5 text-primary mb-3" />
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{t('booking.consultation.label')}</p>
                   <p className="font-bold text-secondary">{t('booking.consultation.value')}</p>
                 </div>
-                <div className="p-6 bg-muted/30 rounded-2xl">
+                <div className="p-6 bg-muted/30 rounded-2xl border border-border/50">
                   <Globe className="w-5 h-5 text-primary mb-3" />
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{t('booking.international.label')}</p>
                   <p className="font-bold text-secondary">{t('booking.international.value')}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => window.location.href = '/'}
-                className="px-10 py-4 bg-secondary text-white font-bold rounded-full hover:bg-secondary/90 transition-all cursor-pointer"
-              >
-                {t('booking.returnHome')}
-              </button>
+              
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/'}
+                  className="group relative px-12 py-4 bg-secondary text-white font-bold rounded-full overflow-hidden transition-all hover:shadow-[0_0_40px_-10px_rgba(var(--secondary),0.5)] cursor-pointer"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    <ArrowLeft className={`w-5 h-5 ${language === 'ar' ? '' : 'rotate-180'}`} />
+                    {t('booking.returnHome')}
+                  </span>
+                  <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                </button>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -293,14 +316,21 @@ export function Booking() {
                           <label htmlFor="booking_phone" className="text-sm font-bold uppercase tracking-widest text-muted-foreground pl-1 rtl:pl-0 rtl:pr-1">
                             {t('booking.phone')}
                           </label>
-                          <input 
-                            type="tel" 
-                            id="booking_phone"
-                            required 
-                            autoComplete="tel"
+                          <PhoneInput
+                            country={'tr'}
                             value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border bg-muted/10 ${errors.phone ? 'border-red-500/50' : 'border-border'} focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-base sm:text-lg`}
+                            onChange={(phone) => handleInputChange('phone', '+' + phone)}
+                            inputProps={{
+                              name: 'phone',
+                              required: true,
+                              autoComplete: 'tel',
+                              id: 'booking_phone'
+                            }}
+                            containerClass="!w-full"
+                            inputClass={`!w-full !px-14 sm:!px-16 !py-6 sm:!py-8 !rounded-2xl !border !bg-muted/10 ${errors.phone ? '!border-red-500/50' : '!border-border'} focus:!border-primary focus:!ring-4 focus:!ring-primary/5 !outline-none !transition-all !text-base sm:!text-lg !h-auto !font-inherit`}
+                            buttonClass={`!border-none !bg-transparent !rounded-l-2xl !px-3 hover:!bg-muted/20 ${language === 'ar' ? '!right-0 !left-auto !border-l' : '!left-0 !border-r'} !border-border`}
+                            dropdownClass="!rounded-xl !border-border !shadow-2xl !bg-white !text-secondary"
+                            searchClass="!bg-muted/10 !border-border"
                           />
                           {errors.phone && <p className="text-[10px] text-red-500 font-bold px-1">{errors.phone}</p>}
                         </div>
@@ -315,23 +345,49 @@ export function Booking() {
                         <p className="text-muted-foreground">{t('booking.step2.desc')}</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        {state.treatments.map((treatment) => (
-                          <button
-                            key={treatment.id}
-                            type="button"
-                            onClick={() => handleInputChange('treatment', treatment.id)}
-                            className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-2 text-left rtl:text-right transition-all flex items-center justify-between group cursor-pointer ${
-                              formData.treatment === treatment.id ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover:border-primary/30'
-                            }`}
-                          >
-                            <span className={`font-bold text-sm sm:text-base ${formData.treatment === treatment.id ? 'text-primary' : 'text-secondary'}`}>{treatment.title[language]}</span>
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                              formData.treatment === treatment.id ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'
-                            }`}>
-                              {formData.treatment === treatment.id && <Check className="w-4 h-4 text-white" />}
-                            </div>
-                          </button>
-                        ))}
+                        {state.treatments.length === 0 ? (
+                          <div className="sm:col-span-2 py-8 text-center text-muted-foreground">
+                            <p className="text-sm">{t('booking.loadingTreatments') || 'Loading available treatments…'}</p>
+                          </div>
+                        ) : state.treatments
+                            .filter(tr => {
+                              const title = (tr.title?.en || '').toLowerCase();
+                              // Strict whitelist but lenient matching for minor variations
+                              return [
+                                'dental-implant',
+                                'hollywood-smile',
+                                'male-hair-transplant',
+                                'female-hair-transplant',
+                                'beard-moustache-transplant',
+                                'eyebrow-transplant'
+                              ].some(allowedSlug => 
+                                tr.slug?.includes(allowedSlug) || 
+                                (tr.title?.en || '').toLowerCase().includes(allowedSlug.replace(/-/g, ' '))
+                              );
+                            })
+                            .map((treatment) => {
+                              const tId = toStrId(treatment.id);
+                              const isSelected = formData.treatment === tId;
+                              return (
+                                <button
+                                  key={tId}
+                                  type="button"
+                                  onClick={() => handleInputChange('treatment', tId)}
+                                  className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-2 text-left rtl:text-right transition-all flex items-center justify-between group cursor-pointer ${
+                                    isSelected ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover:border-primary/30'
+                                  }`}
+                                >
+                                  <span className={`font-bold text-sm sm:text-base ${isSelected ? 'text-primary' : 'text-secondary'}`}>
+                                    {treatment.title?.[language] || treatment.title?.en || ''}
+                                  </span>
+                                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                    isSelected ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'
+                                  }`}>
+                                    {isSelected && <Check className="w-4 h-4 text-white" />}
+                                  </div>
+                                </button>
+                              );
+                            })}
                       </div>
                     </div>
                   )}
@@ -386,7 +442,7 @@ export function Booking() {
                           </div>
                           <div>
                             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{t('booking.treatment')}</p>
-                            <p className="text-lg sm:text-xl font-bold text-primary">{selectedTreatment?.title[language]}</p>
+                             <p className="text-lg sm:text-xl font-bold text-primary">{selectedTreatment?.title?.[language] || selectedTreatment?.title?.en || formData.treatment}</p>
                           </div>
                           <div>
                             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{t('booking.email')}</p>

@@ -1,144 +1,175 @@
 import { useLanguage } from '../context/LanguageContext';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Check, Scissors } from 'lucide-react';
+import { Check, Star, Award, Clock, Scissors, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useDashboard } from '../context/DashboardContext';
+import { EditorialGrid } from '../components/EditorialGrid';
+import { BlogInsights } from '../components/BlogInsights';
+
+const beardBg = 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=1200';
 
 export function BeardTransplant() {
   const { language, t } = useLanguage();
   const { state } = useDashboard();
   
-  const treatment = state.treatments.find(t => t.id === '5') || state.treatments[0];
-  
+  const treatment = useMemo(() => 
+    state.treatments.find(t => Number(t.id) === 5) ||
+    state.treatments.find(t => t.slug === 'beard-transplant') ||
+    (state.treatments.length > 0 ? state.treatments[0] : null)
+  , [state.treatments]);
+
+  const testimonial = useMemo(() => 
+    state.testimonials.find(t => {
+       const treatmentName = typeof t.treatment === 'object' ? (t.treatment as any)?.en : t.treatment;
+       return treatmentName?.toLowerCase().includes('beard');
+    }) || state.testimonials[0], 
+  [state.testimonials]);
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const editorialSections = useMemo(() => {
+    if (!treatment || !Array.isArray(treatment.content_sections) || treatment.content_sections.length === 0) {
+      return [
+        {
+          title: { en: 'Beard Transplant Overview', ar: 'نظرة عامة على زراعة اللحية', fr: 'Aperçu de la greffe de barbe', ru: 'Обзор пересадки бороды' },
+          subtitle: { en: 'Defining Masculinity', ar: 'تحديد الرجولة', fr: 'Définir la masculinité', ru: 'Определение Мужественности' },
+          image: 'https://images.unsplash.com/photo-1590540179852-2110a54f813a?auto=format&fit=crop&q=80&w=800',
+          description: { 
+            en: 'A full, well-defined beard is often considered a symbol of masculinity and confidence. Our beard transplant procedures are designed to address patchiness, scarring, or a complete lack of facial hair, providing you with the robust, natural-looking beard you desire.',
+            ar: 'غالبًا ما تُعتبر اللحية الكاملة المحددة جيدًا رمزًا للرجولة والثقة. تم تصميم إجراءات زراعة اللحية لدينا لمعالجة الترقق أو التندب أو النقص الكامل في شعر الوجه، مما يمنحك اللحية القوية ذات المظهر الطبيعي التي تريدها.',
+          }
+        },
+        {
+          title: { en: 'Precision Facial Hair Restoration', ar: 'ترميم شعر الوجه بدقة', fr: 'Restauration précise des poils du visage', ru: 'Точное Восстановление Волос на Лице' },
+          subtitle: { en: 'Advanced FUE Excellence', ar: 'تميز FUE المتقدم', fr: 'Excellence FUE Avancée', ru: 'Превосходство FUE' },
+          image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800',
+          description: {
+            en: 'By utilizing the advanced FUE method, we extract healthy follicles from the donor area and meticulously implant them into the beard region. This technique ensures no linear scarring and a virtually painless experience, with results that follow your natural growth patterns.',
+            ar: 'باستخدام طريقة FUE المتقدمة، نقوم باستخراج البصيلات السليمة من المنطقة المانحة وزرعها بدقة في منطقة اللحية. تضمن هذه التقنية عدم وجود ندبات خطية وتجربة غير مؤلمة تقريبًا، مع نتائج تتبع أنماط نموك الطبيعية.',
+          }
+        }
+      ];
+    }
+
+    return treatment.content_sections.map((s: any) => ({
+      title: s.title || {},
+      subtitle: s.subtitle || {},
+      image: s.media_url || s.image || beardBg,
+      description: s.description || {},
+      link: s.link || '/contact'
+    }));
+  }, [treatment?.content_sections, language]);
+
+  if (!treatment) return null;
 
   return (
     <div className="min-h-screen" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <section ref={heroRef} className="relative h-[50vh] flex items-center justify-center overflow-hidden">
+      {/* Premium Hero */}
+      <section ref={heroRef} className="relative h-[75vh] flex items-center justify-center overflow-hidden">
         <motion.div className="absolute inset-0 w-full h-full" style={{ y: backgroundY }}>
           <img
-            src={treatment.image}
-            alt={treatment.title[language]}
-            className="w-full h-full object-cover"
+            src={treatment.media_url || treatment.image || beardBg}
+            alt={treatment.title?.[language] || treatment.title?.en}
+            className="w-full h-full object-cover scale-110"
           />
           <div className="absolute inset-0 bg-secondary/80 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-secondary"></div>
         </motion.div>
-        <div className="relative z-10 text-center text-white pt-24">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 italic">{treatment.title[language]}</h1>
-          <p className="text-xl max-w-2xl mx-auto text-white/80">{treatment.description?.[language]}</p>
-        </div>
-      </section>
 
-      <section className="py-24 px-4 max-w-5xl mx-auto text-center">
-        <div className="mb-16">
-          <Scissors className="w-12 h-12 text-primary mx-auto mb-6" />
-          <h2 className="text-4xl font-bold mb-8 text-secondary italic">{treatment.title[language]}</h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            {treatment.description?.[language]}
+        <motion.div style={{ y: textY, opacity }} className="relative z-10 max-w-5xl mx-auto px-4 text-center text-white pt-24">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 text-primary-foreground text-xs font-black tracking-[0.3em] uppercase mb-8">
+            {t('beard.category') || 'Facial Aesthetics'}
+          </motion.div>
+          <h1 className="text-6xl md:text-8xl mb-8 font-bold tracking-tighter drop-shadow-2xl italic">
+            {treatment.title?.[language] || treatment.title?.en || ''}
+          </h1>
+          <p className="text-xl md:text-2xl text-white/80 font-medium max-w-3xl mx-auto leading-relaxed">
+            {treatment.description?.[language] || treatment.description?.en || ''}
           </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left rtl:text-right">
-           <div className="bg-card p-10 rounded-3xl border border-border shadow-xl">
-              <h3 className="text-2xl font-bold mb-6 text-secondary">{t('common.features')}</h3>
-              <ul className="space-y-4">
-                {treatment.features?.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="text-primary w-5 h-5" /> 
-                    <span className="font-semibold text-secondary">{feature[language]}</span>
-                  </li>
-                ))}
-              </ul>
-           </div>
-           <div className="bg-secondary text-white p-10 rounded-3xl shadow-xl flex flex-col justify-between group">
-              <p className="text-lg italic opacity-80 leading-relaxed">
-                {t('beard.testimonial.text')}
-              </p>
-              <Link to="/appointment" className="mt-8 px-8 py-4 bg-primary text-white rounded-full font-bold text-center hover:shadow-2xl hover:shadow-primary/30 transition-all">
-                {t('service.journey.start')}
-              </Link>
+        </motion.div>
+      </section>
+
+      {/* Feature Section */}
+      <section className="py-32 bg-[#FAF9F6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-12 text-left rtl:text-right">
+                 <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-secondary text-primary rounded-2xl flex items-center justify-center shadow-xl">
+                       <Scissors className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-4xl font-black text-secondary tracking-tight italic">{t('common.expertCraftsmanship')}</h2>
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {Array.isArray(treatment.features) && (treatment.features as any[]).map((feature: any, i: number) => (
+                      <motion.div key={i} className="flex items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-secondary/5 group hover:border-primary/20 transition-all">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                          <Check className="w-3 h-3 text-primary group-hover:text-white" />
+                        </div>
+                        <span className="font-bold text-secondary">{typeof feature === 'object' && feature !== null ? (feature[language] || feature.en || '') : feature}</span>
+                      </motion.div>
+                    ))}
+                 </div>
+              </div>
+              <div className="bg-secondary text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 -rotate-45 translate-x-16 -translate-y-16"></div>
+                 <h3 className="text-3xl font-black mb-8 italic">{t('beard.guarantee.title') || 'Permanent Natural Density'}</h3>
+                 <p className="text-lg opacity-80 leading-relaxed mb-12">
+                   {t('beard.details.text') || 'Our meticulous implantation process ensures that every hair follows the natural angle and direction of your facial growth, resulting in a beard that is indistinguishable from natural growth.'}
+                 </p>
+                 <Link to="/appointment" className="inline-flex items-center gap-4 text-primary font-black border-b-4 border-primary pb-1 hover:text-white hover:border-white transition-all text-lg italic">
+                    {t('service.journey.start')} <ArrowRight className="w-5 h-5 rtl:rotate-180" />
+                 </Link>
+              </div>
            </div>
         </div>
       </section>
 
-      {/* Detailed Content Sections */}
-      <section className="py-24 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {[
-            {
-              title: { en: 'Beard Transplant Overview', ar: 'نظرة عامة على زراعة اللحية', fr: 'Aperçu de la greffe de barbe', ru: 'Обзор пересадки бороды' },
-              subtitle: { en: 'Defining Masculinity', ar: 'تحديد الرجولة', fr: 'Définir la masculinité', ru: 'Определение Мужественности' },
-              description: { 
-                en: 'A full, well-defined beard is often considered a symbol of masculinity and confidence. Our beard transplant procedures are designed to address patchiness, scarring, or a complete lack of facial hair, providing you with the robust, natural-looking beard you desire.',
-                ar: 'غالبًا ما تُعتبر اللحية الكاملة المحددة جيدًا رمزًا للرجولة والثقة. تم تصميم إجراءات زراعة اللحية لدينا لمعالجة الترقق أو التندب أو النقص الكامل في شعر الوجه، مما يمنحك اللحية القوية ذات المظهر الطبيعي التي تريدها.',
-                fr: 'Une barbe pleine et bien définie est souvent considérée comme un symbole de masculinité et de confiance. Nos procédures de greffe de barbe sont conçues pour traiter les zones clairsemées.',
-                ru: 'Густая, четко очерченная борода часто считается символом мужественности и уверенности в себе. Наши процедуры по пересадке бороды предназначены для устранения неравномерности роста.'
-              }
-            },
-            {
-              title: { en: 'FUE for Facial Hair', ar: 'تقنية FUE لشعر الوجه', fr: 'FUE pour les poils du visage', ru: 'FUE для Волос на Лице' },
-              subtitle: { en: 'Precision Extraction', ar: 'استخراج دقيق', fr: 'Extraction Précise', ru: 'Точное Извлечение' },
-              description: {
-                en: 'By utilizing the advanced FUE method, we extract healthy follicles from the donor area (usually the back of the head) and meticulously implant them into the beard region. This technique ensures no linear scarring and a virtually painless experience.',
-                ar: 'باستخدام طريقة FUE المتقدمة، نقوم باستخراج البصيلات السليمة من المنطقة المانحة (عادةً مؤخرة الرأس) وزرعها بدقة في منطقة اللحية. تضمن هذه التقنية عدم وجود ندبات خطية وتجربة غير مؤلمة تقريبًا.',
-                fr: 'En utilisant la méthode FUE avancée, nous extrayons des follicules sains de la zone donneuse et les implantons méticuleusement dans la région de la barbe. Cette technique garantit l\'absence de cicatrices.',
-                ru: 'Используя передовой метод FUE, мы извлекаем здоровые фолликулы из донорской зоны и тщательно имплантируем их в область бороды. Этот метод гарантирует отсутствие линейных рубцов.'
-              }
-            },
-            {
-              title: { en: 'The Art of Beard Design', ar: 'فن تصميم اللحية', fr: 'L\'art de la création de barbe', ru: 'Искусство Дизайна Бороды' },
-              subtitle: { en: 'Aesthetic Mastery', ar: 'إتقان جمالي', fr: 'Maîtrise Esthétique', ru: 'Эстетическое Мастерство' },
-              description: {
-                en: 'Beard transplantation is highly artistic. Our surgeons carefully consider your facial symmetry, jawline, and personal preferences to design a beard that perfectly complements your features. Each follicle is implanted at the correct angle and direction to mimic natural facial hair growth.',
-                ar: 'زراعة اللحية فنية للغاية. يدرس جراحونا بعناية تناسق وجهك وخط الفك وتفضيلاتك الشخصية لتصميم لحية تكمل ميزاتك تمامًا. تُزرع كل بصيلة بالزاوية والاتجاه الصحيحين لمحاكاة نمو شعر الوجه الطبيعي.',
-                fr: 'La greffe de barbe est très artistique. Nos chirurgiens examinent attentivement la symétrie de votre visage, la ligne de votre mâchoire et vos préférences personnelles pour concevoir une barbe parfaite.',
-                ru: 'Пересадка бороды требует высокой художественности. Наши хирурги тщательно учитывают симметрию вашего лица, линию подбородка и личные предпочтения, чтобы создать бороду, которая идеально дополнит ваши черты.'
-              }
-            },
-            {
-              title: { en: 'Recovery and Lifelong Growth', ar: 'التعافي والنمو مدى الحياة', fr: 'Récupération et Croissance à Vie', ru: 'Восстановление и Пожизненный Рост' },
-              subtitle: { en: 'Permanent Results', ar: 'نتائج دائمة', fr: 'Résultats Permanents', ru: 'Постоянные Результаты' },
-              description: {
-                en: 'The recovery period is minimal, with redness subsiding within a week. The transplanted hairs will naturally shed after a few weeks, paving the way for permanent, robust growth starting around the third month. The final result is a dense, completely natural beard.',
-                ar: 'فترة التعافي ضئيلة، حيث يختفي الاحمرار في غضون أسبوع. سيتساقط الشعر المزروع طبيعيًا بعد بضعة أسابيع، مما يمهد الطريق لنمو قوي ودائم يبدأ في حوالي الشهر الثالث. النتيجة النهائية هي لحية كثيفة وطبيعية تمامًا.',
-                fr: 'La période de récupération est minime, les rougeurs s\'estompant en une semaine. Les poils greffés tomberont naturellement après quelques semaines, ouvrant la voie à une croissance permanente et robuste.',
-                ru: 'Период восстановления минимален, покраснение спадает в течение недели. Пересаженные волосы естественным образом выпадут через несколько недель, уступая место постоянному, сильному росту.'
-              }
-            }
-          ].map((section, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-card p-8 md:p-10 rounded-3xl shadow-sm border border-border/50 hover:shadow-md transition-all"
-            >
-              {section.subtitle && (
-                <h3 className="text-primary font-bold tracking-wider uppercase mb-3 text-sm">
-                  {section.subtitle[language]}
-                </h3>
-              )}
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-secondary">
-                {section.title[language]}
-              </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {section.description[language]}
-              </p>
-            </motion.div>
-          ))}
+      {/* Editorial Content */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <EditorialGrid sections={editorialSections} t={t} />
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="py-24 bg-[#FAF9F6]">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-6xl font-black mb-16 text-secondary tracking-tighter italic">{t('testimonials.title')}</h2>
+          {testimonial && (
+            <div className="bg-white p-12 rounded-[3rem] shadow-2xl border border-secondary/5 relative">
+              <div className="flex justify-center gap-2 mb-8">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-6 h-6 fill-primary text-primary" />)}
+              </div>
+              <p className="text-2xl font-black text-secondary italic leading-relaxed mb-8">"{typeof testimonial.text === 'object' && testimonial.text !== null ? (testimonial.text[language] || (testimonial.text as any).en) : (testimonial.feedback as any)?.[language] || (testimonial.feedback as any)?.en || ''}"</p>
+              <p className="font-black text-primary uppercase tracking-widest text-sm">{typeof testimonial.name === 'object' && testimonial.name !== null ? (testimonial.name as any)[language] : (testimonial.patient_name as any)?.[language] || testimonial.patient_name || testimonial.name || ''}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <BlogInsights />
+
+      {/* CTA Section */}
+      <section className="py-24 bg-gradient-to-r from-secondary to-secondary/90 text-white relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('home.cta.title')}</h2>
+          <p className="text-xl text-white/80 mb-10">{t('home.cta.subtitle')}</p>
+          <Link to="/appointment" className="inline-flex items-center px-10 py-5 bg-white text-primary font-black rounded-full hover:shadow-2xl transition-all">
+            {t('common.bookNow')} <ArrowRight className="ml-2 w-5 h-5 rtl:rotate-180" />
+          </Link>
         </div>
       </section>
 
       {/* Mobile Sticky CTA */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-border z-40">
-        <Link
-          to="/appointment"
-          className="flex items-center justify-center w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30"
-        >
+      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-border z-40">
+        <Link to="/appointment" className="flex items-center justify-center w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30">
           {t('common.bookNow')}
         </Link>
       </div>

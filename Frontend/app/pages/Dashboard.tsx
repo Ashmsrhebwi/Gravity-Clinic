@@ -16,18 +16,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
 import { BrandingManager } from '../components/dashboard/BrandingManager';
-import { NavbarManager } from '../components/dashboard/NavbarManager';
 import { HeroManager } from '../components/dashboard/HeroManager';
 import { TreatmentManager } from '../components/dashboard/TreatmentManager';
 import { ResultsManager } from '../components/dashboard/ResultsManager';
 import { GenericManager } from '../components/dashboard/GenericManager';
-import { WhatsAppManager } from '../components/dashboard/WhatsAppManager';
-import { MediaManager } from '../components/dashboard/MediaManager';
-import { SEOManager } from '../components/dashboard/SEOManager';
-import { UserManager } from '../components/dashboard/UserManager';
-import { SettingsManager } from '../components/dashboard/SettingsManager';
 import { SectionManager } from '../components/dashboard/SectionManager';
-import { SocialManager } from '../components/dashboard/SocialManager';
+import { WhyChooseUsManager } from '../components/dashboard/WhyChooseUsManager';
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState('branding');
@@ -40,18 +34,24 @@ export function Dashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'branding':
-        return <BrandingManager />;
-      case 'navbar':
-        return <NavbarManager />;
+        return <BrandingManager key="branding" />;
       case 'hero':
-        return <HeroManager />;
+        return <HeroManager key="hero" />;
       case 'treatments':
-        return <TreatmentManager />;
+        return <TreatmentManager key="treatments" />;
       case 'results':
-        return <ResultsManager />;
+        return (
+          <GenericManager
+            key="results"
+            type="results"
+            title={t('dashboard.results.title')}
+            description={t('dashboard.results.desc')}
+          />
+        );
       case 'testimonials':
         return (
           <GenericManager
+            key="testimonials"
             type="testimonials"
             title={t('dashboard.nav.testimonials')}
             description={t('testimonials.subtitle')}
@@ -60,20 +60,16 @@ export function Dashboard() {
       case 'blog':
         return (
           <GenericManager
+            key="blog"
             type="blogs"
             title={t('dashboard.nav.blog')}
             description={t('articles.hero.subtitle')}
           />
         );
-      case 'contact':
-        return (
-          <div className="bg-white p-20 rounded-[2.5rem] text-center italic text-muted-foreground">
-            {t('dashboard.nav.contact')} section is being migrated to SEO & Branding...
-          </div>
-        );
       case 'locations':
         return (
           <GenericManager
+            key="locations"
             type="locations"
             title={t('dashboard.nav.locations')}
             description={t('contact.locations')}
@@ -82,6 +78,7 @@ export function Dashboard() {
       case 'faqs':
         return (
           <GenericManager
+            key="faqs"
             type="faqs"
             title={t('dashboard.nav.faqs')}
             description={t('contact.faq.subtitle')}
@@ -90,6 +87,7 @@ export function Dashboard() {
       case 'stats':
         return (
           <GenericManager
+            key="stats"
             type="stats"
             title={t('dashboard.nav.stats')}
             description={t('stats.countries')}
@@ -98,25 +96,25 @@ export function Dashboard() {
       case 'process':
         return (
           <GenericManager
+            key="process"
             type="processSteps"
             title={t('dashboard.nav.process')}
             description={t('booking.step1.desc')}
           />
         );
       case 'sections':
-        return <SectionManager />;
-      case 'whatsapp':
-        return <WhatsAppManager />;
-      case 'media':
-        return <MediaManager />;
-      case 'social':
-        return <SocialManager />;
-      case 'seo':
-        return <SEOManager />;
-      case 'users':
-        return <UserManager />;
-      case 'settings':
-        return <SettingsManager />;
+        return <SectionManager key="sections" />;
+      case 'why-choose':
+        return <WhyChooseUsManager key="why-choose" />;
+      case 'doctors':
+        return (
+          <GenericManager
+            key="doctors"
+            type="doctors"
+            title="Doctors & Specialists"
+            description="Manage the medical team and their specialties."
+          />
+        );
       default:
         return (
           <div className="space-y-6">
@@ -228,18 +226,9 @@ export function Dashboard() {
 
         {/* Dynamic Content Area */}
         <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.99 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="max-w-7xl mx-auto"
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          <div key={activeTab} className="max-w-7xl mx-auto animate-in fade-in duration-300">
+            {renderContent()}
+          </div>
         </div>
 
         {/* Footer info */}

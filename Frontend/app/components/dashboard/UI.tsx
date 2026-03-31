@@ -164,10 +164,10 @@ export const LanguageTabs = ({
           key={lang.code}
           type="button"
           onClick={() => onLangChange(lang.code)}
-          className={`px-5 py-2.5 rounded-[1.15rem] text-xs font-bold transition-all duration-300 ${
+          className={`px-5 py-2.5 rounded-[1.15rem] text-xs font-bold transition-all duration-300 border ${
             activeLang === lang.code 
-              ? 'bg-white text-primary shadow-lg shadow-secondary/5 scale-[1.02]' 
-              : 'text-secondary/40 hover:text-secondary/60 hover:bg-secondary/5'
+              ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
+              : 'text-secondary/70 bg-secondary/5 border-secondary/10 hover:text-primary hover:bg-primary/5'
           }`}
         >
           {lang.label}

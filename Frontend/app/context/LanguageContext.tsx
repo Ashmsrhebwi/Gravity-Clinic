@@ -307,10 +307,14 @@ const translations: Record<Language, Record<string, string>> = {
     'home.results.2.text': 'Choosing Gravity Clinic for my hair transplant was the best decision. The FUE procedure was painless, and the recovery was remarkably fast. Six months later, and my hair looks completely natural.',
     'home.results.2.category': 'Hair Transplant',
     'home.results.2.patient': 'Patient: James L.',
+    'home.results.empty': 'New Success Stories Coming Soon',
+    'home.results.empty_subtitle': 'Our latest patient transformations are currently being documented for our gallery. Please check back shortly.',
     
     // Doctors
     'doctors.title': 'Meet Our Expert Team',
     'doctors.subtitle': 'International specialists dedicated to your care',
+    'doctors.empty.title': 'Our Specialists',
+    'doctors.empty.subtitle': 'Our team of world-class doctors is currently being updated. Please check back soon or contact us for immediate assistance.',
     
     // Booking
     'booking.title': 'Book Your Consultation',
@@ -1914,6 +1918,8 @@ const translations: Record<Language, Record<string, string>> = {
     'home.results.2.text': 'كان اختيار Gravity Clinic لزراعة شعري أفضل قرار اتخذته. كانت تقنية FUE غير مؤلمة، وكان التعافي سريعاً بشكل ملحوظ. بعد ستة أشهر، يبدو شعري طبيعياً تماماً.',
     'home.results.2.category': 'زراعة الشعر',
     'home.results.2.patient': 'المريض: جيمس ل.',
+    'home.results.empty': 'قصص نجاح جديدة قريبًا',
+    'home.results.empty_subtitle': 'يتم حاليًا توثيق أحدث تحولات مرضانا لمعرضنا. يرجى التحقق مرة أخرى قريبًا.',
     
     // Home CTA
     'home.cta.title': 'هل أنت مستعد لتغيير حياتك؟',
@@ -2054,6 +2060,8 @@ const translations: Record<Language, Record<string, string>> = {
     // Doctors
     'doctors.title': 'تعرف على فريقنا الطبي',
     'doctors.subtitle': 'متخصصون دوليون مكرسون لرعايتك',
+    'doctors.empty.title': 'متخصصونا',
+    'doctors.empty.subtitle': 'يتم حاليًا تحديث قائمة أطبائنا العالميين. يرجى العودة قريبًا أو الاتصال بنا للحصول على مساعدة فورية.',
     
     // Booking
     'booking.title': 'احجز استشارتك',
@@ -2392,7 +2400,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language][key] || '';
   };
 
   return (

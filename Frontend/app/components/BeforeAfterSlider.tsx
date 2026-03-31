@@ -22,6 +22,20 @@ export function BeforeAfterSlider({ beforeImage, afterImage, label }: BeforeAfte
     setSliderPosition(Math.max(0, Math.min(100, position)));
   }, []);
 
+  if (!beforeImage || !afterImage) {
+    return (
+      <div className="relative aspect-video w-full rounded-[2.5rem] overflow-hidden bg-secondary/5 border-2 border-dashed border-secondary/10 flex flex-col items-center justify-center text-center p-8">
+        <div className="w-16 h-16 bg-secondary/5 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-secondary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h4 className="text-secondary/40 font-bold uppercase tracking-widest text-xs mb-2">Results Processing</h4>
+        <p className="text-muted-foreground text-sm max-w-xs italic">The transformation images for this result are currently being prepared for the gallery.</p>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={containerRef}

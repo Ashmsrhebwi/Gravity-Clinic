@@ -28,7 +28,11 @@ export function BrandingManager() {
 
     try {
       const response = await clinicService.uploadMedia(file) as any;
-      updateBranding({ logo: response.data.url });
+      // API returns { id, full_url } — support both shapes
+      const url = response?.full_url || response?.url || response?.data?.full_url || response?.data?.url;
+      if (url) {
+        updateBranding({ logo: url });
+      }
     } catch (error) {
       console.error('Upload failed:', error);
     }
@@ -80,7 +84,7 @@ export function BrandingManager() {
             <div className="space-y-8">
               <DashboardInput
                 label={`${t('dashboard.branding.name')} (${activeLang.toUpperCase()})`}
-                value={branding.name[activeLang]}
+                value={typeof branding.name === 'object' ? (branding.name[activeLang] || '') : (branding.name || '')}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="Gravity Clinic"
                 icon={Type}

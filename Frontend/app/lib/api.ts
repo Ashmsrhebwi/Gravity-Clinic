@@ -15,8 +15,9 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
   const { data, ...customOptions } = options;
   
   const token = localStorage.getItem('token');
+  const isFormData = data instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     'Accept': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...(customOptions.headers || {}),
@@ -28,7 +29,7 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
   };
 
   if (data) {
-    config.body = JSON.stringify(data);
+    config.body = isFormData ? data : JSON.stringify(data);
   }
 
   // Ensure endpoint starts with /
@@ -50,7 +51,14 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
       return {} as T;
     }
 
-    return await response.json();
+    const json = await response.json();
+
+    // Support both wrapped { success, data } and raw responses
+    if (json && typeof json === 'object' && 'success' in json && 'data' in json && json.success === true) {
+      return json.data as T;
+    }
+
+    return json as T;
   } catch (error) {
     console.error(`[API Request Error] ${url}:`, error);
     throw error;

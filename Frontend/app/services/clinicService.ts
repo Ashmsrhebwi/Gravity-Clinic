@@ -26,6 +26,9 @@ export const clinicService = {
   getSettings: () => 
     api.get<any>('/public/settings'),
 
+  getFullInit: () => 
+    api.get<any>('/public/init-full'),
+
   getNavLinks: () => 
     api.get<any[]>('/public/nav-links'),
 
@@ -34,9 +37,6 @@ export const clinicService = {
 
   getProcessSteps: () => 
     api.get<any[]>('/public/process-steps'),
-
-  getSocialLinks: () => 
-    api.get<any[]>('/public/social-links'),
 
   getTreatments: () => 
     api.get<any[]>('/public/treatments'),
@@ -52,6 +52,15 @@ export const clinicService = {
 
   submitLead: (data: any) => 
     api.post('/public/leads', data),
+
+  getBlogs: () => 
+    api.get<any[]>('/public/blogs'),
+
+  getDoctors: () => 
+    api.get<any[]>('/public/doctors'),
+
+  getResults: () => 
+    api.get<any[]>('/public/results'),
 
   /**
    * Authentication
@@ -80,11 +89,8 @@ export const clinicService = {
   uploadMedia: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/admin/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Do NOT set Content-Type manually — the browser must set it with the boundary
+    return api.post('/admin/upload', formData);
   },
 
   updateSettingsBatch: (settings: { key: string; value: any }[]) => 
@@ -92,6 +98,26 @@ export const clinicService = {
 
   syncNavLinks: (links: any[]) => 
     api.post('/admin/nav-links/sync', { links }),
+
+  // Treatments
+  createTreatment: (data: any) => api.post('/admin/treatments', data),
+  updateTreatment: (id: number, data: any) => api.put(`/admin/treatments/${id}`, data),
+  deleteTreatment: (id: number) => api.delete(`/admin/treatments/${id}`),
+
+  // Results
+  createResult: (data: any) => api.post('/admin/results', data),
+  updateResult: (id: number, data: any) => api.put(`/admin/results/${id}`, data),
+  deleteResult: (id: number) => api.delete(`/admin/results/${id}`),
+
+  // Doctors
+  createDoctor: (data: any) => api.post('/admin/doctors', data),
+  updateDoctor: (id: number, data: any) => api.put(`/admin/doctors/${id}`, data),
+  deleteDoctor: (id: number) => api.delete(`/admin/doctors/${id}`),
+
+  // Blogs
+  createBlog: (data: any) => api.post('/admin/blogs', data),
+  updateBlog: (id: number, data: any) => api.put(`/admin/blogs/${id}`, data),
+  deleteBlog: (id: number) => api.delete(`/admin/blogs/${id}`),
 
   // Stats
   createStat: (data: any) => api.post('/admin/stats', data),

@@ -1,6 +1,6 @@
 import { useLanguage } from '../context/LanguageContext';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
-import { Star, Award, Clock, Languages, Shield, UserCheck, GraduationCap, Globe, X } from 'lucide-react';
+import { Star, Award, Clock, Languages, Shield, UserCheck, GraduationCap, Globe, X, Users, Building2, Paintbrush, Package, Activity, Heart, Sparkles, Medal } from 'lucide-react';
 import { Link } from 'react-router';
 import { useRef, useState } from 'react';
 import { Card } from '../components/ui/card';
@@ -23,8 +23,9 @@ export function Doctors() {
 
   const [activeDoctorId, setActiveDoctorId] = useState<string | null>(null);
 
-  const toggleDoctor = (doctorId: string) => {
-    setActiveDoctorId((current) => (current === doctorId ? null : doctorId));
+  const toggleDoctor = (doctorId: string | number) => {
+    const id = String(doctorId);
+    setActiveDoctorId((current) => (current === id ? null : id));
   };
 
   return (
@@ -78,6 +79,19 @@ export function Doctors() {
       {/* Specialist Grid */}
       <section className="py-20 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {state.loading ? (
+            <div className="flex items-center justify-center py-32 text-muted-foreground">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+            </div>
+          ) : state.doctors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="w-20 h-20 bg-secondary/5 rounded-full flex items-center justify-center mb-6 text-secondary/20">
+                <Users className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-bold text-secondary mb-2">{t('doctors.empty.title') || 'Our Specialists'}</h3>
+              <p className="text-muted-foreground italic max-w-md">{t('doctors.empty.subtitle') || 'Our team of world-class doctors is currently being updated. Please check back soon or contact us for immediate assistance.'}</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {state.doctors.map((doctor, index) => (
               <motion.div
@@ -86,7 +100,7 @@ export function Doctors() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                onMouseEnter={() => setActiveDoctorId(doctor.id)}
+                onMouseEnter={() => setActiveDoctorId(String(doctor.id))}
                 onMouseLeave={() => setActiveDoctorId(null)}
               >
                 <Card
@@ -97,8 +111,8 @@ export function Doctors() {
                     className="relative aspect-[4/5] overflow-hidden"
                     role="button"
                     tabIndex={0}
-                    aria-label={`${doctor.name} — ${doctor.specialty[language]}`}
-                    aria-expanded={activeDoctorId === doctor.id}
+                    aria-label={`${doctor.name} — ${(doctor.specialty as any)?.[language] || (doctor.specialty as any)?.en || ''}`}
+                    aria-expanded={activeDoctorId === String(doctor.id)}
                     onClick={() => toggleDoctor(doctor.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -108,37 +122,37 @@ export function Doctors() {
                     }}
                     onFocus={() => setActiveDoctorId(doctor.id)}
                   >
-                  <img
-                    src={doctor.image}
-                    alt={doctor.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover grayscale-[0.2] transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
-                  />
-                  <div className="absolute bottom-6 left-6 right-6 rtl:text-right">
-                    <div className="flex items-center justify-between text-white/90 mb-2 rtl:flex-row-reverse">
-                       <span className="text-xs font-bold uppercase tracking-widest text-primary">{doctor.specialty[language]}</span>
-                       <div className="flex items-center bg-white/10 backdrop-blur-md px-2 py-1 rounded-lg">
-                         <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1 rtl:mr-0 rtl:ml-1" />
-                         <span className="text-xs font-bold">{doctor.rating}</span>
-                       </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 leading-tight">{doctor.name}</h3>
-                    
-                    <div className="flex items-center gap-4 text-white/80 text-sm rtl:flex-row-reverse">
-                      <div className="flex items-center">
-                        <Award className="w-4 h-4 mr-1.5 text-primary rtl:mr-0 rtl:ml-1.5" />
-                        <span>{doctor.experience} {t('common.years')}</span>
+                    <img
+                      src={doctor.media_url || doctor.image || (doctor as any).image_url || ''}
+                      alt={doctor.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover grayscale-[0.2] transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
+                    />
+                    <div className="absolute bottom-6 left-6 right-6 rtl:text-right">
+                      <div className="flex items-center justify-between text-white/90 mb-2 rtl:flex-row-reverse">
+                         <span className="text-xs font-bold uppercase tracking-widest text-primary">{(doctor.specialty as any)?.[language] || ''}</span>
+                         <div className="flex items-center bg-white/10 backdrop-blur-md px-2 py-1 rounded-lg">
+                           <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 mr-1 rtl:mr-0 rtl:ml-1" />
+                           <span className="text-xs font-bold">{doctor.rating}</span>
+                         </div>
                       </div>
-                      <div className="flex items-center">
-                        <UserCheck className="w-4 h-4 mr-1.5 text-primary rtl:mr-0 rtl:ml-1.5" />
-                        <span>{doctor.patients} {t('common.patients')}</span>
+                      <h3 className="text-2xl font-bold text-white mb-4 leading-tight">{doctor.name}</h3>
+                      
+                      <div className="flex items-center gap-4 text-white/80 text-sm rtl:flex-row-reverse">
+                        <div className="flex items-center">
+                          <Award className="w-4 h-4 mr-1.5 text-primary rtl:mr-0 rtl:ml-1.5" />
+                          <span>{doctor.experience} {t('common.years')}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <UserCheck className="w-4 h-4 mr-1.5 text-primary rtl:mr-0 rtl:ml-1.5" />
+                          <span>{doctor.patients} {t('common.patients')}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
                   {/* Hover Reveal Profile Details */}
                   <AnimatePresence>
-                    {activeDoctorId === doctor.id && (
+                    {activeDoctorId === String(doctor.id) && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -167,28 +181,28 @@ export function Doctors() {
                             </div>
                           </div>
                           <p className="text-white/80 text-sm leading-relaxed mb-8 italic">
-                            "{doctor.bio[language]}"
+                            "{(doctor.bio as any)?.[language] || ''}"
                           </p>
                           <div className="space-y-4">
                             <div>
                                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">{t('doctors.specialties.header')}</p>
                               <div className="flex flex-wrap gap-2 rtl:flex-row-reverse">
-                                {doctor.specialties.map((spec, i) => (
-                                  <span key={i} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium">
-                                    {spec[language]}
-                                  </span>
-                                ))}
+                                 {Array.isArray(doctor.specialties) && doctor.specialties.map((spec: any, i: number) => (
+                                   <span key={i} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium">
+                                     {typeof spec === 'object' && spec !== null ? spec[language] : spec}
+                                   </span>
+                                 ))}
                               </div>
                             </div>
                             <div>
                               <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">{t('common.languages')}</p>
                               <div className="flex items-center gap-3 rtl:flex-row-reverse">
                                 <Globe className="w-4 h-4 text-white/60" />
-                                <div className="flex gap-2 rtl:flex-row-reverse">
-                                  {doctor.languages.map((lang, i) => (
-                                    <span key={i} className="text-xs font-medium text-white/80">{lang[language]}</span>
-                                  ))}
-                                </div>
+                                 <div className="flex gap-2 rtl:flex-row-reverse">
+                                   {Array.isArray(doctor.languages) && doctor.languages.map((lang: any, i: number) => (
+                                     <span key={i} className="text-xs font-medium text-white/80">{typeof lang === 'object' && lang !== null ? lang[language] : lang}</span>
+                                   ))}
+                                 </div>
                               </div>
                             </div>
                           </div>
@@ -205,48 +219,50 @@ export function Doctors() {
               </motion.div>
             ))}
           </div>
+          )}
         </div>
       </section>
-
-      {/* Why Our Doctors Section */}
-      <section className="py-20 bg-[#F7F8FA]">
+      {/* Why Our Doctors Section - Synced with Home Why Choose Us */}
+      <section className="py-24 bg-[#F7F8FA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl mb-4 text-secondary italic">{t('feature.title')}</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-secondary italic">
+              {state.sections['home.whyChooseUs']?.title?.[language] || t('feature.title') || 'Why Choose Us'}
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light">
+              {state.sections['home.whyChooseUs']?.subtitle?.[language] || t('feature.subtitle') || 'Our commitment to excellence ensures your journey is safe, professional, and life-changing.'}
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Award,
-                title: t('doctors.why.title1'),
-                desc: t('doctors.why.desc1'),
-              },
-              {
-                icon: Star,
-                title: t('doctors.why.title2'),
-                desc: t('doctors.why.desc2'),
-              },
-              {
-                icon: Languages,
-                title: t('doctors.why.title3'),
-                desc: t('doctors.why.desc3'),
-              },
-            ].map((item, idx) => (
-              <Card
-                key={idx}
-                className="bg-card p-8 rounded-2xl shadow-lg text-center border border-border/40"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-secondary">{item.title}</h3>
-                <p className="text-muted-foreground">{item.desc}</p>
-              </Card>
-            ))}
+ 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {(state.whyChooseUsFeatures || []).map((feature: any, idx: number) => {
+              const Icon = ({ 
+                Award, Building2, Paintbrush, Package, 
+                Medal: Award, Stethoscope: Activity, Heart: Heart, 
+                Sparkles: Sparkles, Shield: Shield, Star: Star 
+              } as any)[feature.icon] || Award;
+              
+              return (
+                <Card
+                  key={idx}
+                  className="bg-card p-10 rounded-[2.5rem] shadow-xl shadow-secondary/5 text-center border border-border/40 hover:-translate-y-2 transition-all duration-300"
+                >
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <Icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4 text-secondary leading-tight">
+                    {feature.title?.[language] || (typeof feature.title === 'string' ? feature.title : feature.title?.en) || ''}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {feature.desc?.[language] || (typeof feature.desc === 'string' ? feature.desc : feature.desc?.en) || ''}
+                  </p>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
+
 
       {/* CTA Section */}
       <section className="py-24 bg-gradient-to-r from-secondary to-secondary/90 text-white relative overflow-hidden">

@@ -2,17 +2,27 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useLanguage } from '../context/LanguageContext';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
-import { ArrowRight, Star, Play, Users, Award, Activity, CheckCircle, Shield, Building2, Paintbrush, Package, Calendar, User } from 'lucide-react';
+import { ArrowRight, Star, Play, Users, Award, Activity, CheckCircle, Shield, Building2, Paintbrush, Package, Calendar, User, Heart, Sparkles, ShieldCheck } from 'lucide-react';
 import { LazyImage } from '../components/LazyImage';
 import { LazyComponent } from '../components/LazyComponent';
 import useEmblaCarousel from 'embla-carousel-react';
 import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
 import { useDashboard } from '../context/DashboardContext';
 import { useDebounce } from '../hooks/usePerformance';
+import { BlogInsights } from '../components/BlogInsights';
 import { clinicService } from '../services/clinicService';
 
 const ctaImage = 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=1200';
-export function Home() {
+
+const CANONICAL_MAP: Record<string, string> = {
+  'Dental Implant': 'dental-implant',
+  'Hollywood Smile': 'hollywood-smile',
+  'Male Hair Transplant': 'male-hair-transplant',
+  'Female Hair Transplant': 'female-hair-transplant',
+  'Beard & Moustache Transplant': 'beard-moustache-transplant',
+  'Eyebrow Transplant': 'eyebrow-transplant'
+};
+export const Home = () => {
   const { language, t } = useLanguage();
   const { state } = useDashboard();
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
@@ -51,24 +61,149 @@ export function Home() {
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const connectionStatus = !state.loading && state.branding?.name?.[language] ? 'success' : 'idle';
 
+  // Smooth scroll to hash logic
   useEffect(() => {
-    clinicService.checkConnection()
-      .then(data => {
-        if (data.status === 'success') {
-          setConnectionStatus('success');
-          console.log('✅ Connected to Backend via Service:', data.message);
-        }
-      })
-      .catch(err => {
-        console.error('❌ Backend Connection Failed via Service:', err);
-        setConnectionStatus('error');
-      });
-  }, []);
+    if (!state.loading && window.location.hash === '#results') {
+      const element = document.getElementById('results');
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [state.loading]);
+
+  const filteredResults = useMemo(() => {
+    return state.results.filter(r => {
+      const hasBefore = r.before_image_url || (r as any).before_image || (r as any).before_media_url || (r as any).image_url || (r as any).image;
+      const hasAfter = r.after_image_url || (r as any).after_image || (r as any).after_media_url;
+      return hasBefore && hasAfter;
+    });
+  }, [state.results]);
 
   return (
     <div className="min-h-screen bg-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Premium Initial Hydration Loader */}
+      <AnimatePresence>
+        {state.loading && !state.hero?.title?.[language] && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #1E1C4B 0%, #12112e 50%, #1a1040 100%)',
+            }}
+          >
+            {/* Ambient background glow */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(242,133,34,0.08) 0%, transparent 70%)',
+              }}
+            />
+
+            {/* Outer slow pulse ring */}
+            <motion.div
+              animate={{ scale: [1, 1.18, 1], opacity: [0.15, 0.05, 0.15] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute w-72 h-72 rounded-full border border-[#F28522]/20"
+            />
+            {/* Mid pulse ring */}
+            <motion.div
+              animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.08, 0.25] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+              className="absolute w-56 h-56 rounded-full border border-[#F28522]/30"
+            />
+            {/* Inner pulse ring */}
+            <motion.div
+              animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.15, 0.4] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+              className="absolute w-40 h-40 rounded-full border border-[#F28522]/50"
+            />
+
+            {/* Logo container — breathes gently */}
+            <motion.div
+              animate={{ scale: [0.97, 1.02, 0.97] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative z-10 flex flex-col items-center"
+            >
+              {/* Logo card */}
+              <div
+                className="w-24 h-24 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(242,133,34,0.25)',
+                  boxShadow: '0 0 40px rgba(242,133,34,0.12), inset 0 1px 0 rgba(255,255,255,0.08)',
+                }}
+              >
+                {state.branding?.logo ? (
+                  <img
+                    src={state.branding.logo}
+                    alt={state.branding?.name?.[language] || 'Gravity Clinic'}
+                    className="w-14 h-14 object-contain brightness-0 invert"
+                  />
+                ) : (
+                  <motion.span
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="text-3xl font-black tracking-tighter text-white"
+                    style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                  >
+                    G
+                  </motion.span>
+                )}
+              </div>
+
+              {/* Clinic name */}
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="text-xs font-black tracking-[0.4em] uppercase text-white/30 mb-3"
+              >
+                {state.branding?.name?.[language] || 'Gravity Clinic'}
+              </motion.p>
+
+              {/* Tagline — word-by-word stagger */}
+              <div className="flex items-center gap-1.5">
+                {['Preparing', 'your', 'experience\u2026'].map((word, i) => (
+                  <motion.span
+                    key={word}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + i * 0.15, duration: 0.5, ease: 'easeOut' }}
+                    className="text-sm font-medium text-white/50"
+                    style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+                  >
+                    {word}
+                  </motion.span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Bottom shimmer progress bar */}
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-[2px]"
+              style={{ background: 'rgba(255,255,255,0.04)' }}
+            >
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.3 }}
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(242,133,34,0.8) 50%, transparent 100%)',
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
       {/* Backend Connection Indicator (Floating) */}
       <AnimatePresence>
         {connectionStatus === 'success' && (
@@ -96,20 +231,44 @@ export function Home() {
           className="absolute inset-0 w-full h-full"
           style={{ y: backgroundY }}
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            key={state.hero.videoUrl}
-            className="w-full h-full object-cover origin-center"
-          >
-            <source src={state.hero.videoUrl} type="video/mp4" />
-          </video>
+          {/* Priority: YouTube > device video > image > gradient */}
+          {state.hero?.youtubeUrl ? (() => {
+            const getYoutubeId = (url: string) => {
+              const m = url?.match(/(?:youtu\.be\/|v\/|watch\?v=|&v=)([^#&?]{11})/);
+              return m ? m[1] : null;
+            };
+            const yid = getYoutubeId(state.hero.youtubeUrl);
+            return yid ? (
+              <iframe
+                className="absolute inset-0 w-full h-full object-cover"
+                src={`https://www.youtube.com/embed/${yid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${yid}&playsinline=1`}
+                frameBorder="0"
+                allow="autoplay; encrypted-media"
+                style={{ pointerEvents: 'none' }}
+              />
+            ) : null;
+          })() : state.hero?.videoUrl ? (
+            <video
+              autoPlay loop muted playsInline
+              key={state.hero.videoUrl}
+              className="w-full h-full object-cover origin-center"
+            >
+              <source src={state.hero.videoUrl} type="video/mp4" />
+            </video>
+          ) : (state.hero?.media_url || state.hero?.image) ? (
+            <img
+              src={state.hero?.media_url || state.hero?.image}
+              className="w-full h-full object-cover origin-center"
+              alt="Hero Background"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1E1C4B] to-[#2d2b7a]" />
+          )}
           {/* Luxury dark overlay for text contrast */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#1E1C4B]/80 via-[#1E1C4B]/60 to-transparent"></div>
           <div className="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
         </motion.div>
+
 
         {/* Hero Content */}
         <motion.div
@@ -122,9 +281,9 @@ export function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-4 sm:mb-6 leading-tight drop-shadow-xl font-bold"
           >
-            <span className="block">{state.hero.title[language]}</span>
+            <span className="block">{state.hero?.title?.[language] || ''}</span>
             <span className="block text-primary mt-2">
-              {state.hero.subheader[language]}
+              {state.hero?.subheader?.[language] || ''}
             </span>
           </motion.h1>
 
@@ -134,7 +293,7 @@ export function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto font-light leading-relaxed px-2"
           >
-            {state.hero.subtitle[language]}
+            {state.hero?.subtitle?.[language] || ''}
           </motion.p>
         </motion.div>
       </section>
@@ -144,6 +303,14 @@ export function Home() {
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="mb-12 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              {state.sections['home.stats']?.title?.[language] || ''}
+            </h2>
+            <p className="text-white/60 text-sm">
+              {state.sections['home.stats']?.subtitle?.[language] || ''}
+            </p>
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 divide-y lg:divide-y-0 lg:divide-x divide-white/10 rtl:divide-x-reverse">
             {state.stats.map((stat, idx) => {
               const Icon = [Users, Award, Activity, CheckCircle][idx % 4];
@@ -163,7 +330,7 @@ export function Home() {
                     {stat.value}{stat.suffix}
                   </h3>
                   <p className="text-sm font-bold text-white/50 tracking-widest uppercase">
-                    {stat.label[language]}
+                    {(typeof stat.label === 'object' && stat.label !== null ? stat.label?.[language] : stat.label) || ''}
                   </p>
                 </motion.div>
               );
@@ -177,35 +344,38 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 px-4">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-secondary">
-              Why Choose Us
+              {state.sections['home.whyChooseUs']?.title?.[language] || t('feature.title') || 'Why Choose Us'}
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-light">
-              World-class care, affordable excellence — all in one destination.
+              {state.sections['home.whyChooseUs']?.subtitle?.[language] || t('feature.subtitle') || 'Excellence in every detail of your transformation journey.'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              { icon: Award, title: 'Expert Specialists', desc: 'Board-certified doctors with international experience.' },
-              { icon: Building2, title: 'Modern Facilities', desc: 'State-of-the-art equipment and technology.' },
-              { icon: Paintbrush, title: 'Artistry & Precision', desc: 'Tailored aesthetic designs for your unique features.' },
-              { icon: Package, title: 'All-Inclusive Packages', desc: 'Treatment, accommodation, and transfers included.' },
-            ].map((feature, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white p-8 rounded-3xl shadow-xl shadow-secondary/5 border border-border/40 hover:-translate-y-2 transition-transform duration-300"
-              >
-                <div className="w-14 h-14 rounded-[1.25rem] bg-secondary flex items-center justify-center mb-6 shadow-md">
-                  <feature.icon className="w-6 h-6 text-[#F97316]" />
-                </div>
-                <h3 className="text-xl font-bold text-secondary mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{feature.desc}</p>
-              </motion.div>
-            ))}
+            {(state.whyChooseUsFeatures || []).map((feature, idx) => {
+              const Icon = ({ 
+                Award, Building2, Paintbrush, Package, 
+                Medal: Award, Stethoscope: Activity, Heart: Heart, 
+                Sparkles: Sparkles, Shield: ShieldCheck, Star: Star 
+              } as any)[feature.icon] || Award;
+              
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white p-8 rounded-3xl shadow-xl shadow-secondary/5 border border-border/40 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col"
+                >
+                  <div className="w-14 h-14 rounded-[1.25rem] bg-secondary flex items-center justify-center mb-6 shadow-md shrink-0">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-secondary mb-3">{feature.title?.[language] || (typeof feature.title === 'string' ? feature.title : feature.title?.en) || ''}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{feature.desc?.[language] || (typeof feature.desc === 'string' ? feature.desc : feature.desc?.en) || ''}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -215,16 +385,16 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-secondary">
-              Our Process
+              {state.sections['home.process']?.title?.[language] || 'Our Process'}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light">
-              Your journey to excellence, simplified into clear, professional steps.
+              {state.sections['home.process']?.subtitle?.[language] || 'Your journey to excellence, simplified into clear, professional steps.'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {state.processSteps.map((step, idx) => {
-              const Icon = ({ Calendar, User, Shield, Star, CheckCircle } as any)[step.iconName] || CheckCircle;
+              const Icon = ({ Calendar, User, Shield, Star, CheckCircle } as any)[(step as any).iconName || (step as any).icon_name || step.icon] || CheckCircle;
               return (
                 <motion.div
                   key={step.id}
@@ -241,8 +411,8 @@ export function Home() {
                     <div className="absolute top-8 right-8 text-6xl font-black text-secondary/5 group-hover:text-primary/10 transition-colors">
                       {idx + 1}
                     </div>
-                    <h3 className="text-xl font-bold text-secondary mb-3">{step.title[language]}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{step.description[language]}</p>
+                    <h3 className="text-xl font-bold text-secondary mb-3">{step.title?.[language] || step.title?.en || ''}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{step.description?.[language] || step.description?.en || ''}</p>
                   </div>
                   {idx < state.processSteps.length - 1 && (
                     <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border/40 z-0" />
@@ -260,10 +430,10 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 px-4">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-secondary">
-              {state.sections['home.treatments']?.title[language]}
+              {state.sections['home.treatments']?.title?.[language] || ''}
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              {state.sections['home.treatments']?.subtitle[language]}
+              {state.sections['home.treatments']?.subtitle?.[language] || ''}
             </p>
           </div>
 
@@ -278,24 +448,27 @@ export function Home() {
                 className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all"
               >
                 <div className="aspect-[4/5] overflow-hidden relative">
-                  <img
-                    src={treatment.image}
-                    alt={treatment.title[language]}
+                  <LazyImage
+                    src={treatment.media_url || treatment.image || (treatment as any).image_url || ''}
+                    alt={treatment.title?.[language] || treatment.title?.en || ''}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                    loading="lazy"
                   />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] uppercase tracking-widest font-bold rounded-full border border-white/20">
-                      {treatment.category[language]}
+                      {(typeof treatment.category === 'object' && treatment.category !== null ? treatment.category?.[language] : treatment.category) || ''}
                     </span>
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1E1C4B]/95 via-[#1E1C4B]/40 to-transparent flex items-end">
                   <div className="p-8 text-white w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                    <h3 className="text-2xl font-bold mb-2">{treatment.title[language]}</h3>
-                    <p className="text-sm text-white/80 mb-6 line-clamp-2 font-light">{treatment.description?.[language] || 'Expert medical care tailored to your needs.'}</p>
+                    <h3 className="text-2xl font-bold mb-2">{treatment.title?.[language] || treatment.title?.en || ''}</h3>
+                    <p className="text-sm text-white/80 mb-6 line-clamp-2 font-light">{treatment.description?.[language] || treatment.description?.en || ''}</p>
                     <Link
-                      to={treatment.link}
+                      to={(() => {
+                        const catEn = typeof treatment.category === 'object' ? treatment.category?.en : treatment.category;
+                        const canonicalSlug = catEn ? CANONICAL_MAP[catEn] : null;
+                        return (treatment as any).link || `/treatment/${canonicalSlug || (treatment as any).slug}` || '#';
+                      })()}
                       className="inline-flex items-center text-sm font-semibold text-primary hover:text-white transition-colors group/link"
                     >
                       {t('common.learnMore')}
@@ -310,40 +483,70 @@ export function Home() {
       </section>
 
       {/* Results / Before & After Section */}
-      <section className="py-24 bg-white overflow-hidden">
+      <section id="results" className="py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
             <div className="max-w-2xl">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-secondary tracking-tight">
-                {state.sections['home.results']?.title[language]}
+                {state.sections['home.results']?.title?.[language] || ''}
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed">
-                {state.sections['home.results']?.subtitle[language]}
+                {state.sections['home.results']?.subtitle?.[language] || ''}
               </p>
             </div>
-            <Link to="/doctors" className="hidden md:flex items-center text-[#F97316] font-bold hover:gap-3 transition-all duration-300">
-              {t('home.results.cta') || 'View All Transformational Stories'} <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
-            {state.results.map((result) => (
-              <div key={result.id} className="space-y-6">
-                <BeforeAfterSlider
-                  beforeImage={result.beforeImage}
-                  afterImage={result.afterImage}
-                  label={result.label[language]}
-                />
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mt-4">
-                  <h4 className="text-lg font-bold text-secondary mb-3">"{result.title[language]}"</h4>
-                  <p className="text-muted-foreground text-sm italic leading-relaxed mb-6">"{result.text[language]}"</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#F97316] uppercase tracking-wide">{result.category[language]}</span>
-                    <span className="text-xs text-muted-foreground font-medium">{result.patient[language]}</span>
-                  </div>
+            {filteredResults.length === 0 ? (
+              // Show a premium placeholder if no results exist
+              <div className="col-span-full py-20 px-4 rounded-[3rem] bg-secondary/[0.02] border-2 border-dashed border-secondary/5 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                  <Star className="w-10 h-10 text-primary/30" />
                 </div>
+                <h3 className="text-xl font-bold text-secondary mb-3">{t('home.results.empty') || 'New Success Stories Coming Soon'}</h3>
+                <p className="text-muted-foreground italic max-w-sm">{t('home.results.empty_subtitle') || 'Our latest patient transformations are currently being documented for our gallery. Please check back shortly.'}</p>
               </div>
-            ))}
+            ) : (
+              filteredResults.map((result) => {
+                  const beforeImg = result.before_image_url || (result as any).before_image || (result as any).before_media_url || (result as any).image_url || (result as any).image || '';
+                  const afterImg = result.after_image_url || (result as any).after_image || (result as any).after_media_url || '';
+                  const patientName = (typeof result.patient_name === 'object' && result.patient_name !== null ? result.patient_name?.[language] || result.patient_name?.en : result.patient_name) || 'Case Study';
+                  const story = (typeof result.story === 'object' && result.story !== null ? result.story?.[language] || result.story?.en : result.story) || '';
+
+                  return (
+                    <div key={result.id} className="space-y-6">
+                      <BeforeAfterSlider
+                        beforeImage={beforeImg}
+                        afterImage={afterImg}
+                        label={patientName}
+                      />
+                      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mt-4">
+                        <h4 className="text-lg font-bold text-secondary mb-3">"{patientName}"</h4>
+                        {story && <p className="text-muted-foreground text-sm italic leading-relaxed mb-6">"{story}"</p>}
+                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-[#F97316] uppercase tracking-wide mb-1">
+                              {(typeof result.treatment?.category === 'object' && result.treatment?.category !== null ? result.treatment?.category?.[language] || result.treatment?.category?.en : result.treatment?.category) || ''}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              {(typeof result.treatment?.title === 'object' && result.treatment?.title !== null ? result.treatment?.title?.[language] || result.treatment?.title?.en : result.treatment?.title) || ''}
+                            </span>
+                          </div>
+                          {result.treatment?.slug && (
+                            <Link 
+                              to={`/treatment/${result.treatment.slug}`}
+                              className="text-xs font-black text-secondary border-b-2 border-primary pb-0.5 hover:text-primary transition-colors flex items-center gap-1 group"
+                            >
+                              {t('common.learnMore')}
+                              <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+            )}
           </div>
         </div>
       </section>
@@ -353,45 +556,83 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-secondary">
-              {state.sections['home.testimonials']?.title[language]}
+              {state.sections['home.testimonials']?.title?.[language] || ''}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground">
-              {state.sections['home.testimonials']?.subtitle[language]}
+              {state.sections['home.testimonials']?.subtitle?.[language] || ''}
             </p>
           </div>
 
           <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
             <div className="flex">
-              {state.testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] min-w-0 pl-3 sm:pl-6 first:pl-0">
-                  <motion.div
-                    className="h-full bg-card p-6 sm:p-8 md:p-10 rounded-3xl shadow-xl shadow-secondary/5 border border-border/40 relative flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center mb-6 text-[#F97316]">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-5 h-5 fill-current" />
-                        ))}
-                      </div>
-                      <p className="text-secondary text-[15px] mb-8 italic font-medium leading-relaxed">"{testimonial.text[language]}"</p>
-                    </div>
+              {useMemo(() => state.testimonials.filter(t => (t.name || t.patient_name) && (t.text || t.feedback)), [state.testimonials])
+                .map((testimonial) => {
+                  const name = (typeof testimonial.name === 'object' && testimonial.name !== null ? testimonial.name?.[language] || testimonial.name?.en : testimonial.name) || 
+                               (typeof testimonial.patient_name === 'object' && testimonial.patient_name !== null ? testimonial.patient_name?.[language] || testimonial.patient_name?.en : testimonial.patient_name) || 
+                               'Valued Patient';
+                  
+                  const text = (typeof testimonial.text === 'object' && testimonial.text !== null ? testimonial.text?.[language] || testimonial.text?.en : testimonial.text) || 
+                               (typeof testimonial.feedback === 'object' && testimonial.feedback !== null ? testimonial.feedback?.[language] || testimonial.feedback?.en : testimonial.feedback) || 
+                               'Exceptional service and life-changing results at Gravity Clinic.';
+                               
+                  const rating = Math.max(1, Math.min(5, Number(testimonial.rating) || 5));
 
-                    <div className="flex items-center pt-6 border-t border-gray-100 mt-auto">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-muted mr-4 border border-gray-200" style={{ marginLeft: language === 'ar' ? '1rem' : '0', marginRight: language === 'ar' ? '0' : '1rem' }}>
-                        <LazyImage
-                          src={testimonial.image}
-                          alt={testimonial.name[language]}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-bold text-secondary text-base">{testimonial.name[language]}</p>
-                        <p className="text-xs text-[#F97316] font-bold tracking-wide uppercase mt-1">{testimonial.treatment[language]}</p>
-                      </div>
+                  return (
+                    <div key={testimonial.id} className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] min-w-0 pl-3 sm:pl-6 first:pl-0">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="h-full bg-white p-8 sm:p-10 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-border/40 relative flex flex-col group"
+                      >
+                        <div className="mb-8">
+                          <div className="flex items-center gap-1 mb-6 text-[#F97316]">
+                            {[...Array(rating)].map((_, i) => (
+                              <Star key={i} className="w-5 h-5 fill-current" />
+                            ))}
+                          </div>
+                          <p className="text-secondary/70 text-lg sm:text-xl font-medium leading-relaxed italic line-clamp-6">
+                            "{text}"
+                          </p>
+                        </div>
+
+                        <div className="mt-auto pt-8 border-t border-gray-50">
+                          <div className="flex items-end justify-between gap-4">
+                            <div className="flex-1">
+                              <p className="font-extrabold text-secondary text-lg leading-tight mb-1">
+                                {name}
+                              </p>
+                              <p className="text-[11px] text-[#F97316] font-bold tracking-widest uppercase">
+                                {(() => {
+                                  const tt = testimonial.treatment;
+                                  if (typeof tt === 'object' && tt !== null) {
+                                    if ('title' in tt) return tt.title[language] || tt.title.en;
+                                    return tt[language] || (tt as any).en;
+                                  }
+                                  return tt || '';
+                                })()}
+                              </p>
+                            </div>
+                            {(() => {
+                              const tt = testimonial.treatment;
+                              const slug = (typeof tt === 'object' && tt !== null && 'slug' in tt) ? tt.slug : null;
+                              if (slug) {
+                                return (
+                                  <Link 
+                                    to={`/treatment/${slug}`}
+                                    className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all group/learn"
+                                    title={t('common.learnMore')}
+                                  >
+                                    <ArrowRight className="w-5 h-5 group-hover/learn:translate-x-0.5 transition-transform" />
+                                  </Link>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </div>
+                        </div>
+                      </motion.div>
                     </div>
-                  </motion.div>
-                </div>
-              ))}
+                  );
+                })}
             </div>
           </div>
 
@@ -408,6 +649,9 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      {/* Blog Insights Section */}
+      <BlogInsights />
 
       {/* CTA Section */}
       <section className="py-24 bg-gradient-to-r from-secondary to-secondary/90 text-white relative overflow-hidden">

@@ -19,7 +19,7 @@ export function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -28,16 +28,16 @@ export function LazyImage({
           setIsInView(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.01, rootMargin: '100px' } 
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => {
-      if (imgRef.current) {
-        observer.unobserve(imgRef.current);
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
       }
     };
   }, []);
@@ -51,13 +51,12 @@ export function LazyImage({
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div ref={containerRef} className={`relative overflow-hidden ${className}`}>
       {!isLoaded && (
-        <div className="absolute inset-0 bg-muted/20 animate-pulse" />
+        <div className="absolute inset-0 bg-muted/20 animate-pulse mix-blend-multiply" />
       )}
       {isInView && (
         <m.img
-          ref={imgRef}
           src={hasError ? placeholder : src}
           alt={alt}
           loading={loading}
@@ -65,8 +64,8 @@ export function LazyImage({
           onError={handleError}
           initial={{ opacity: 0 }}
           animate={{ opacity: isLoaded ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-          className={`w-full h-full object-cover ${hasError ? 'opacity-50' : ''}`}
+          transition={{ duration: 0.4 }}
+          className={`w-full h-full object-cover transition-opacity ${hasError ? 'opacity-50' : ''}`}
         />
       )}
     </div>

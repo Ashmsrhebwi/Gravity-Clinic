@@ -5,6 +5,7 @@ import {
   Image, 
   Star, 
   Stethoscope, 
+  Award,
   FileText, 
   Phone, 
   MapPin, 
@@ -39,24 +40,18 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
   const navItems = [
     { id: 'branding', label: t('dashboard.nav.branding'), icon: LayoutDashboard },
-    { id: 'navbar', label: t('dashboard.nav.navbar'), icon: List },
     { id: 'hero', label: t('dashboard.nav.hero'), icon: Tv },
     { id: 'treatments', label: t('dashboard.nav.treatments'), icon: Stethoscope },
+    { id: 'why-choose', label: 'Why Choose Us', icon: Award },
+    { id: 'doctors', label: 'Doctors', icon: UsersIcon },
     { id: 'results', label: t('dashboard.nav.results'), icon: Image },
     { id: 'testimonials', label: t('dashboard.nav.testimonials'), icon: Star },
     { id: 'blog', label: t('dashboard.nav.blog'), icon: FileText },
-    { id: 'contact', label: t('dashboard.nav.contact'), icon: Phone },
     { id: 'locations', label: t('dashboard.nav.locations'), icon: MapPin },
     { id: 'faqs', label: t('dashboard.nav.faqs'), icon: HelpCircle },
     { id: 'stats', label: t('dashboard.nav.stats'), icon: BarChart3 },
     { id: 'process', label: t('dashboard.nav.process'), icon: Workflow },
     { id: 'sections', label: t('dashboard.nav.sections'), icon: Type },
-    { id: 'whatsapp', label: t('dashboard.nav.whatsapp'), icon: MessageCircle },
-    { id: 'social', label: t('dashboard.nav.social'), icon: Share2 },
-    { id: 'media', label: t('dashboard.nav.media'), icon: HardDrive },
-    { id: 'seo', label: t('dashboard.nav.seo'), icon: Globe },
-    { id: 'users', label: t('dashboard.nav.users'), icon: UsersIcon },
-    { id: 'settings', label: t('dashboard.nav.settings'), icon: SettingsIcon },
   ];
 
   return (
@@ -90,7 +85,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 group ${
                 activeTab === item.id 
                   ? 'bg-primary text-white shadow-xl shadow-primary/20' 
-                  : 'text-white/50 hover:text-white'
+                  : 'text-white/70 hover:text-white'
               }`}
             >
               <div className="flex items-center gap-3.5">
